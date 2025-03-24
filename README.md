@@ -1,5 +1,11 @@
 # esphome-daly-hkms-bms
-ESPHome component to monitor DALY H/K/M/S-Series Battery Management Systems via UART / RS485.
+ESPHome component to monitor DALY H/K/M/S-Series Battery Management Systems via UART / RS485.  
+Works with other of the "new" DALY BMS as well.
+
+Tested with:
+- 100A 15S K-Series BMS
+- 100A 8S K-Series BMS
+- 500A 24S "100 Balance" Active Balance BMS
 
 Also see https://github.com/syssi/esphome-daly-bms for a similar component that uses BLE.
 

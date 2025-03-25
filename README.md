@@ -188,17 +188,29 @@ Be aware that by default, the BMS goes to sleep after 1 hour of inactivity and c
 
 The BMS connectors are compatible with JST-GH (1.25mm pin pitch).
 
-The BMS can be connected via UART or RS485. RS485 is less susceptible to interference and multiple BMS can be hooked up to one RS485 bus:
+The BMS can be connected via UART or RS485. RS485 is less susceptible to interference and multiple BMS can be hooked up to one RS485 bus.
 
 ### UART
-Connect BMS RX to ESP TX, BMS TX to ESP RX and BMS GND to ESP GND.
+
+> [!WARNING]  
+> The UART ground is always connected to the battery ground!  
+> If the ESP is connected to the output side of the battery (through a DC-DC converter, GPIO, etc.) the ESP and/or BMS will be damaged once the BMS switches off!
+
+Ideally, the ESP should be powered by the 3.3V on the BMS connector and not connected to anything else (unless opto-isolated).
+
+#### ESP Connections
+- tx_pin: BMS RX
+- rx_pin: BMS TX
+- GND: BMS GND
 
 ### RS485
 In an RS485 bus, no pins are swapped between sender and receiver(s) (A -> A, B -> B, GND -> GND).
 
-**Always connect the ground** when using RS485, to avoid stray currents running through the RS485 transceivers.
+Also, the RS485 outputs of the BMS are isolated from the battery (at least on the K-series), so there are no ground issues like the UART pins have.
 
-#### ESP connections
+Still, always connect the ground when using RS485, to avoid stray currents running through the RS485 transceiver.
+
+#### ESP Connections
 - Transceiver without auto direction control (R, D, NRE, DE)
     - tx_pin: D
     - rx_pin: R

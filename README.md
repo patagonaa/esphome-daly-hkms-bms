@@ -193,7 +193,7 @@ The BMS can be connected via UART or RS485. RS485 is less susceptible to interfe
 ### UART
 
 > [!WARNING]  
-> The UART ground is always connected to the battery ground!  
+> The UART ground is always connected to the battery ground (not the BMS output ground)!  
 > If the ESP is connected to the output side of the battery (through a DC-DC converter, GPIO, etc.) the ESP and/or BMS will be damaged once the BMS switches off!
 
 Ideally, the ESP should be powered by the 3.3V on the BMS connector and not connected to anything else (unless opto-isolated).

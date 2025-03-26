@@ -55,6 +55,8 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
   SUB_SENSOR(temps_number)
   SUB_SENSOR(power)
   SUB_SENSOR(energy)
+  SUB_SENSOR(temperature_mos)
+  SUB_SENSOR(temperature_board)
   SUB_SENSOR(remaining_mileage)
   SUB_SENSOR(remaining_charging_time)
   SUB_SENSOR(temperature_1)
@@ -65,8 +67,6 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
   SUB_SENSOR(temperature_6)
   SUB_SENSOR(temperature_7)
   SUB_SENSOR(temperature_8)
-  SUB_SENSOR(temperature_mos)
-  SUB_SENSOR(temperature_board)
 #endif
 
 #ifdef USE_TEXT_SENSOR

@@ -52,15 +52,6 @@ CONF_BALANCE_CURRENT = "balance_current"
 CONF_REMAINING_MILEAGE = "remaining_mileage"
 CONF_REMAINING_CHARGING_TIME = "remaining_charging_time"
 
-CONF_TEMPERATURE_1 = "temperature_1"
-CONF_TEMPERATURE_2 = "temperature_2"
-CONF_TEMPERATURE_3 = "temperature_3"
-CONF_TEMPERATURE_4 = "temperature_4"
-CONF_TEMPERATURE_5 = "temperature_5"
-CONF_TEMPERATURE_6 = "temperature_6"
-CONF_TEMPERATURE_7 = "temperature_7"
-CONF_TEMPERATURE_8 = "temperature_8"
-
 CONF_TEMPERATURE_MOS = "temperature_mos"
 CONF_TEMPERATURE_BOARD = "temperature_board"
 
@@ -76,6 +67,7 @@ ICON_SCALE_BALANCE = "mdi:scale-balance"
 UNIT_AMPERE_HOUR = "Ah"
 
 MAX_CELL_NUMBER = 48
+MAX_TEMP_NUMBER = 8
 
 TYPES = [
     CONF_VOLTAGE,
@@ -97,19 +89,11 @@ TYPES = [
     CONF_BALANCE_CURRENT,
     CONF_POWER,
     CONF_ENERGY,
-    CONF_REMAINING_MILEAGE,
-    CONF_REMAINING_CHARGING_TIME,
-    CONF_TEMPERATURE_1,
-    CONF_TEMPERATURE_2,
-    CONF_TEMPERATURE_3,
-    CONF_TEMPERATURE_4,
-    CONF_TEMPERATURE_5,
-    CONF_TEMPERATURE_6,
-    CONF_TEMPERATURE_7,
-    CONF_TEMPERATURE_8,
     CONF_TEMPERATURE_MOS,
     CONF_TEMPERATURE_BOARD,
-    # Cell voltages are handled by loops below
+    CONF_REMAINING_MILEAGE,
+    CONF_REMAINING_CHARGING_TIME,
+    # Cell voltages and temperatures are handled by loops below
 ]
 
 TEMPERATURE_SENSOR_SCHEMA = sensor.sensor_schema(
@@ -137,6 +121,17 @@ def get_cell_voltages_schema():
     schema_obj = {}
     for i in range(1, MAX_CELL_NUMBER + 1):
         schema_obj[cv.Optional(get_cell_voltage_key(i))] = CELL_VOLTAGE_SCHEMA
+    return cv.Schema(schema_obj)
+
+
+def get_temperature_sensor_key(temp):
+    return f"temperature_{temp}"
+
+
+def get_temperature_sensors_schema():
+    schema_obj = {}
+    for i in range(1, MAX_TEMP_NUMBER + 1):
+        schema_obj[cv.Optional(get_temperature_sensor_key(i))] = TEMPERATURE_SENSOR_SCHEMA
     return cv.Schema(schema_obj)
 
 
@@ -261,6 +256,8 @@ CONFIG_SCHEMA = (
                 device_class=DEVICE_CLASS_ENERGY,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
+            cv.Optional(CONF_TEMPERATURE_MOS): TEMPERATURE_SENSOR_SCHEMA,
+            cv.Optional(CONF_TEMPERATURE_BOARD): TEMPERATURE_SENSOR_SCHEMA,
             cv.Optional(CONF_REMAINING_MILEAGE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_KILOMETER,
                 icon=ICON_MAP_MARKER_DISTANCE,
@@ -275,19 +272,10 @@ CONFIG_SCHEMA = (
                 device_class=DEVICE_CLASS_DURATION,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
-            cv.Optional(CONF_TEMPERATURE_1): TEMPERATURE_SENSOR_SCHEMA,
-            cv.Optional(CONF_TEMPERATURE_2): TEMPERATURE_SENSOR_SCHEMA,
-            cv.Optional(CONF_TEMPERATURE_3): TEMPERATURE_SENSOR_SCHEMA,
-            cv.Optional(CONF_TEMPERATURE_4): TEMPERATURE_SENSOR_SCHEMA,
-            cv.Optional(CONF_TEMPERATURE_5): TEMPERATURE_SENSOR_SCHEMA,
-            cv.Optional(CONF_TEMPERATURE_6): TEMPERATURE_SENSOR_SCHEMA,
-            cv.Optional(CONF_TEMPERATURE_7): TEMPERATURE_SENSOR_SCHEMA,
-            cv.Optional(CONF_TEMPERATURE_8): TEMPERATURE_SENSOR_SCHEMA,
-            cv.Optional(CONF_TEMPERATURE_MOS): TEMPERATURE_SENSOR_SCHEMA,
-            cv.Optional(CONF_TEMPERATURE_BOARD): TEMPERATURE_SENSOR_SCHEMA,
         }
     )
     .extend(get_cell_voltages_schema())
+    .extend(get_temperature_sensors_schema())
     .extend(cv.COMPONENT_SCHEMA)
 )
 
@@ -307,7 +295,9 @@ async def setup_cell_voltage_conf(config, cell, hub):
 
 async def to_code(config):
     hub = await cg.get_variable(config[CONF_DALY_HKMS_BMS_ID])
-    for key in TYPES:
-        await setup_conf(config, key, hub)
     for i in range(1, MAX_CELL_NUMBER + 1):
         await setup_cell_voltage_conf(config, i, hub)
+    for i in range(1, MAX_TEMP_NUMBER + 1):
+        await setup_cell_voltage_conf(config, get_temperature_sensor_key(i), hub)
+    for key in TYPES:
+        await setup_conf(config, key, hub)

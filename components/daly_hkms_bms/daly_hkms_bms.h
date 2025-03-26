@@ -30,7 +30,7 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
   void set_daly_address(uint8_t address);
 
 #ifdef USE_SENSOR
-  void set_cell_voltage_sensor(size_t cell, sensor::Sensor *sensor) {
+  void set_cell_voltage_sensor(uint16_t cell, sensor::Sensor *sensor) {
     if (cell > this->cell_voltage_sensors_max_)
       this->cell_voltage_sensors_max_ = cell;
     this->cell_voltage_sensors_[cell - 1] = sensor;
@@ -81,7 +81,7 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
   uint8_t daly_address_;
 
   sensor::Sensor *cell_voltage_sensors_[DALY_MODBUS_MAX_CELL_COUNT]{};
-  size_t cell_voltage_sensors_max_{0};
+  uint16_t cell_voltage_sensors_max_{0};
 
   struct QueueItem
   {

@@ -233,7 +233,7 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_BALANCE_CURRENT): sensor.sensor_schema(
                 unit_of_measurement=UNIT_AMPERE,
                 icon=ICON_SCALE_BALANCE,
-                accuracy_decimals=1,
+                accuracy_decimals=3,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_CELLS_NUMBER): sensor.sensor_schema(

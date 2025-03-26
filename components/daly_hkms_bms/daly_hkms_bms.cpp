@@ -179,7 +179,32 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
 
   publish_sensor_state(this->balance_current_sensor_, DALY_MODBUS_ADDR_BALANCE_CURRENT, -30000, 0.001);
 
-  publish_sensor_state(this->power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 1);
+  if (has_register(DALY_MODBUS_ADDR_POWER) && has_register(DALY_MODBUS_ADDR_CHG_DSCHG_STATUS)) {
+    uint16_t chg_dschg_status = get_register(DALY_MODBUS_ADDR_CHG_DSCHG_STATUS);
+    switch (chg_dschg_status) {
+      case 0: // stationary
+        publish_sensor_state(this->power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 0);
+        publish_sensor_state(this->charge_power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 0);
+        publish_sensor_state(this->discharge_power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 0);
+        break;
+
+      case 1: // charging
+        publish_sensor_state(this->power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 1);
+        publish_sensor_state(this->charge_power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 1);
+        publish_sensor_state(this->discharge_power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 0);
+        break;
+
+      case 2: // discharging
+        publish_sensor_state(this->power_sensor_, DALY_MODBUS_ADDR_POWER, 0, -1);
+        publish_sensor_state(this->charge_power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 0);
+        publish_sensor_state(this->discharge_power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 1);
+        break;
+      
+      default:
+        break;
+    }
+  }
+
   publish_sensor_state(this->energy_sensor_, DALY_MODBUS_ADDR_ENERGY, 0, 1);
 
   publish_sensor_state(this->temperature_mos_sensor_, DALY_MODBUS_ADDR_MOS_TEMP, -40, 1, 255);

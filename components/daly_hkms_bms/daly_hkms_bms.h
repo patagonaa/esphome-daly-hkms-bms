@@ -54,6 +54,8 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
   SUB_SENSOR(cells_number)
   SUB_SENSOR(temps_number)
   SUB_SENSOR(power)
+  SUB_SENSOR(charge_power)
+  SUB_SENSOR(discharge_power)
   SUB_SENSOR(energy)
   SUB_SENSOR(temperature_mos)
   SUB_SENSOR(temperature_board)

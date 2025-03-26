@@ -49,6 +49,9 @@ CONF_REMAINING_CAPACITY = "remaining_capacity"
 CONF_CYCLES = "cycles"
 CONF_BALANCE_CURRENT = "balance_current"
 
+CONF_CHARGE_POWER = "charge_power"
+CONF_DISCHARGE_POWER = "discharge_power"
+
 CONF_REMAINING_MILEAGE = "remaining_mileage"
 CONF_REMAINING_CHARGING_TIME = "remaining_charging_time"
 
@@ -88,6 +91,8 @@ TYPES = [
     CONF_CYCLES,
     CONF_BALANCE_CURRENT,
     CONF_POWER,
+    CONF_CHARGE_POWER,
+    CONF_DISCHARGE_POWER,
     CONF_ENERGY,
     CONF_TEMPERATURE_MOS,
     CONF_TEMPERATURE_BOARD,
@@ -245,6 +250,18 @@ CONFIG_SCHEMA = (
                 accuracy_decimals=0,
             ),
             cv.Optional(CONF_POWER): sensor.sensor_schema(
+                unit_of_measurement=UNIT_WATT,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_POWER,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
+            cv.Optional(CONF_CHARGE_POWER): sensor.sensor_schema(
+                unit_of_measurement=UNIT_WATT,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_POWER,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
+            cv.Optional(CONF_DISCHARGE_POWER): sensor.sensor_schema(
                 unit_of_measurement=UNIT_WATT,
                 accuracy_decimals=0,
                 device_class=DEVICE_CLASS_POWER,

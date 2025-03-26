@@ -41,7 +41,7 @@ static const uint16_t DALY_MODBUS_ADDR_PRECHG_MOS_ACTIVE = 0x54;
 static const uint16_t DALY_MODBUS_ADDR_HEATING_MOS_ACTIVE = 0x55;
 static const uint16_t DALY_MODBUS_ADDR_FAN_MOS_ACTIVE = 0x56;
 
-static const uint16_t DALY_MODBUS_ADDR_POWER = 0x58;
+static const uint16_t DALY_MODBUS_ADDR_POWER = 0x58; // has to be in the same message as 0x48
 static const uint16_t DALY_MODBUS_ADDR_ENERGY = 0x59;
 
 static const uint16_t DALY_MODBUS_ADDR_MOS_TEMP = 0x5A;

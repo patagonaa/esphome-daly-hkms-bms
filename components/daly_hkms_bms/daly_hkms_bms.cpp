@@ -13,11 +13,6 @@ static const char *const TAG = "daly_hkms_bms";
 static const uint8_t DALY_MODBUS_REQUEST_ADDRESS_OFFSET = 0x80;
 static const uint8_t DALY_MODBUS_RESPONSE_ADDRESS_OFFSET = 0x50;
 
-static const uint8_t DALY_MODBUS_READ_CELL_VOLTAGES_ADDR = DALY_MODBUS_ADDR_CELL_VOLT_1;
-
-static const uint8_t DALY_MODBUS_READ_DATA_ADDR = DALY_MODBUS_ADDR_CELL_TEMP_1;
-static const uint8_t DALY_MODBUS_READ_DATA_LENGTH = DALY_MODBUS_REGISTER_MAX - DALY_MODBUS_ADDR_CELL_TEMP_1 + 1;
-
 static const uint8_t MODBUS_CMD_READ_HOLDING_REGISTERS = 0x03;
 
 void DalyHkmsBmsComponent::set_daly_address(uint8_t daly_address) {
@@ -30,8 +25,20 @@ void DalyHkmsBmsComponent::set_daly_address(uint8_t daly_address) {
 }
 
 void DalyHkmsBmsComponent::loop() {
-  if (this->read_state_ == ReadState::IDLE) {
-    return;
+  if (this->waiting_to_update_ && this->send_queue_.empty()) {
+    this->waiting_to_update_ = false;
+    if(this->cell_voltage_sensors_max_ > 0) {
+      this->send_queue_.push_back({
+        .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
+        .addr = DALY_MODBUS_ADDR_CELL_VOLT_1,
+        .data = this->cell_voltage_sensors_max_ // avoid reading all 48 cell voltages if we only want 16 or so
+      });
+    }
+    this->send_queue_.push_back({
+      .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
+      .addr = DALY_MODBUS_ADDR_CELL_TEMP_1,
+      .data = DALY_MODBUS_REGISTER_MAX - DALY_MODBUS_ADDR_CELL_TEMP_1 + 1
+    });
   }
 
   // If our last send has had no reply yet, and it wasn't that long ago, do nothing.
@@ -45,38 +52,43 @@ void DalyHkmsBmsComponent::loop() {
     return;
   }
 
-  uint8_t start_address;
-  uint8_t register_count;
-  switch (this->read_state_) {
-    case ReadState::READ_CELL_VOLTAGES:
-      start_address = DALY_MODBUS_READ_CELL_VOLTAGES_ADDR;
-      // avoid reading all 48 cell voltages if we only want 16 or so
-      register_count = this->cell_voltage_sensors_max_;
-      break;
-    case ReadState::READ_DATA:
-      start_address = DALY_MODBUS_READ_DATA_ADDR;
-      register_count = DALY_MODBUS_READ_DATA_LENGTH;
-      break;
-    default:
-      return;
+  QueueItem to_send;
+  if (this->pending_request_.cmd != 0) {
+    to_send = this->pending_request_;
+    // resend pending request
+  } else if(!this->send_queue_.empty()) {
+    // send next item from queue
+    to_send = this->send_queue_.front();
+    this->send_queue_.pop_front();
+  } else {
+    // queue empty, nothing to do -> return
+    return;
   }
-
-  ESP_LOGD(TAG, "Sending modbus read request to %d: start register %d, register count %d", this->daly_address_,
-           start_address, register_count);
 
   // send the request using Modbus directly instead of ModbusDevice so we can send the data with the request address
   uint8_t modbus_device_request_address = this->daly_address_ + DALY_MODBUS_REQUEST_ADDRESS_OFFSET;
 
-  this->parent_->send(modbus_device_request_address, MODBUS_CMD_READ_HOLDING_REGISTERS, start_address, register_count,
-                      0, nullptr);
+  switch (to_send.cmd) {
+    case MODBUS_CMD_READ_HOLDING_REGISTERS:
+    {
+      ESP_LOGD(TAG, "Sending modbus read request to %d: start register %d, register count %d", this->daly_address_,
+        to_send.addr, to_send.data);
+      this->parent_->send(modbus_device_request_address, MODBUS_CMD_READ_HOLDING_REGISTERS, to_send.addr, to_send.data,
+        0, nullptr);
+      break;
+    }
+  
+    default:
+      ESP_LOGE(TAG, "Invalid command %d", to_send.cmd);
+      return;
+  }
 
+  this->pending_request_ = to_send;
   this->last_send_ = millis();
 }
 
 void DalyHkmsBmsComponent::update() {
-  if (this->read_state_ == ReadState::IDLE) {
-    this->advance_read_state();
-  }
+  waiting_to_update_ = true;
 }
 
 void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
@@ -86,24 +98,23 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
     ESP_LOGD(TAG, "Got data without requesting it first");
     return;
   }
+  QueueItem request = this->pending_request_;
   this->last_send_ = 0;
+  this->pending_request_.cmd = 0; // set to not pending
 
   ESP_LOGD(TAG, "Got modbus response: %d bytes", data.size());
 
-  size_t register_count;
   size_t register_offset;
+  size_t register_count;
 
-  switch (this->read_state_) {
-    case ReadState::READ_CELL_VOLTAGES:
-      register_offset = DALY_MODBUS_READ_CELL_VOLTAGES_ADDR;
-      register_count = this->cell_voltage_sensors_max_;
+  switch (request.cmd) {
+    case MODBUS_CMD_READ_HOLDING_REGISTERS:
+      register_offset = request.addr;
+      register_count = request.data;
       break;
-    case ReadState::READ_DATA:
-      register_offset = DALY_MODBUS_READ_DATA_ADDR;
-      register_count = DALY_MODBUS_READ_DATA_LENGTH;
-      break;
+    
     default:
-      ESP_LOGE(TAG, "Invalid read state");
+      ESP_LOGE(TAG, "Invalid command %d", request.cmd);
       return;
   }
 
@@ -125,13 +136,13 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
     sensor->publish_state(value);
   };
 
-  if (this->read_state_ == ReadState::READ_CELL_VOLTAGES) {
+  if (register_offset == DALY_MODBUS_ADDR_CELL_VOLT_1) {
 #ifdef USE_SENSOR
     for (size_t i = 0; i < this->cell_voltage_sensors_max_; i++) {
       publish_sensor_state(this->cell_voltage_sensors_[i], DALY_MODBUS_ADDR_CELL_VOLT_1 + i, 0, 0.001);
     }
 #endif
-  } else if (this->read_state_ == ReadState::READ_DATA) {
+  } else if (register_offset == DALY_MODBUS_ADDR_CELL_TEMP_1) {
 #ifdef USE_SENSOR
     publish_sensor_state(this->temperature_1_sensor_, DALY_MODBUS_ADDR_CELL_TEMP_1, -40, 1, 255);
     publish_sensor_state(this->temperature_2_sensor_, DALY_MODBUS_ADDR_CELL_TEMP_1 + 1, -40, 1, 255);
@@ -202,26 +213,6 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
       this->precharging_mos_enabled_binary_sensor_->publish_state(get_register(DALY_MODBUS_ADDR_PRECHG_MOS_ACTIVE) > 0);
     }
 #endif
-  }
-  this->advance_read_state();
-}
-
-void DalyHkmsBmsComponent::advance_read_state() {
-  switch (this->read_state_) {
-    case ReadState::IDLE:
-      // skip reading cell voltages if there are no cell voltage sensors
-      if (this->cell_voltage_sensors_max_ == 0) {
-        this->read_state_ = ReadState::READ_DATA;
-      } else {
-        this->read_state_ = ReadState::READ_CELL_VOLTAGES;
-      }
-      break;
-    case ReadState::READ_CELL_VOLTAGES:
-      this->read_state_ = ReadState::READ_DATA;
-      break;
-    case ReadState::READ_DATA:
-      this->read_state_ = ReadState::IDLE;
-      break;
   }
 }
 

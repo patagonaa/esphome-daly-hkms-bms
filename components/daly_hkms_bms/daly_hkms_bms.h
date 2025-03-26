@@ -83,9 +83,15 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
   sensor::Sensor *cell_voltage_sensors_[DALY_MODBUS_MAX_CELL_COUNT]{};
   size_t cell_voltage_sensors_max_{0};
 
-  void advance_read_state();
+  struct QueueItem
+  {
+    uint8_t cmd;
+    uint16_t addr;
+    uint16_t data;
+  };
 
-  enum class ReadState { READ_CELL_VOLTAGES, READ_DATA, IDLE } read_state_{ReadState::IDLE};
+  std::deque<QueueItem> send_queue_{};
+  QueueItem pending_request_;
 };
 
 }  // namespace daly_hkms_bms

@@ -30,6 +30,7 @@ static const uint16_t DALY_MODBUS_ADDR_CHG_DSCHG_STATUS = 0x48;
 static const uint16_t DALY_MODBUS_ADDR_REMAINING_CAPACITY = 0x4B;
 static const uint16_t DALY_MODBUS_ADDR_CYCLES = 0x4C;
 static const uint16_t DALY_MODBUS_ADDR_BALANCE_STATUS = 0x4D;
+static const uint16_t DALY_MODBUS_ADDR_BALANCE_CURRENT = 0x4E;
 static const uint16_t DALY_MODBUS_ADDR_BALANCE_STATUS_PER_CELL_1_TO_16 = 0x4F;
 static const uint16_t DALY_MODBUS_ADDR_BALANCE_STATUS_PER_CELL_17_TO_32 = 0x50;
 static const uint16_t DALY_MODBUS_ADDR_BALANCE_STATUS_PER_CELL_33_TO_48 = 0x51;
@@ -47,7 +48,18 @@ static const uint16_t DALY_MODBUS_ADDR_MOS_TEMP = 0x5A;
 static const uint16_t DALY_MODBUS_ADDR_BOARD_TEMP = 0x5B;
 static const uint16_t DALY_MODBUS_ADDR_HEATING_TEMP = 0x5C;
 
-static const uint16_t DALY_MODBUS_REGISTER_MAX = 0x5C;
+static const uint16_t DALY_MODBUS_ADDR_REMAINING_MILEAGE = 0x5E;
+static const uint16_t DALY_MODBUS_ADDR_REMAINING_CHARGING_TIME = 0x64;
+
+// 0x66 - 0x69
+static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_1_ERR_1 = 0x66;
+
+// 0x6D - 0x73
+static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_1 = 0x6D;
+static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_7 = 0x73;
+
+static const uint16_t DALY_MODBUS_ADDR_CHG_MOS_CONTROL = 0x121;
+static const uint16_t DALY_MODBUS_ADDR_DSCHG_MOS_CONTROL = 0x122;
 
 }  // namespace daly_hkms_bms
 }  // namespace esphome

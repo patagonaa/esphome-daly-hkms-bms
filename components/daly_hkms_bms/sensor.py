@@ -7,16 +7,26 @@ from esphome.const import (
     CONF_BATTERY_LEVEL,
     CONF_MAX_TEMPERATURE,
     CONF_MIN_TEMPERATURE,
+    CONF_POWER,
+    CONF_ENERGY,
     DEVICE_CLASS_VOLTAGE,
     DEVICE_CLASS_CURRENT,
     DEVICE_CLASS_BATTERY,
     DEVICE_CLASS_TEMPERATURE,
+    DEVICE_CLASS_POWER,
+    DEVICE_CLASS_ENERGY,
+    DEVICE_CLASS_DURATION,
+    DEVICE_CLASS_DISTANCE,
     STATE_CLASS_MEASUREMENT,
     UNIT_EMPTY,
     UNIT_VOLT,
     UNIT_AMPERE,
     UNIT_PERCENT,
     UNIT_CELSIUS,
+    UNIT_WATT,
+    UNIT_WATT_HOURS,
+    UNIT_KILOMETER,
+    UNIT_MINUTE,
     ICON_FLASH,
     ICON_PERCENT,
     ICON_COUNTER,
@@ -37,6 +47,11 @@ CONF_TEMPS_NUMBER = "temps_number"
 
 CONF_REMAINING_CAPACITY = "remaining_capacity"
 CONF_CYCLES = "cycles"
+CONF_BALANCE_CURRENT = "balance_current"
+
+CONF_REMAINING_MILEAGE = "remaining_mileage"
+CONF_REMAINING_CHARGING_TIME = "remaining_charging_time"
+
 CONF_TEMPERATURE_1 = "temperature_1"
 CONF_TEMPERATURE_2 = "temperature_2"
 CONF_TEMPERATURE_3 = "temperature_3"
@@ -51,9 +66,12 @@ CONF_TEMPERATURE_BOARD = "temperature_board"
 
 ICON_CURRENT_DC = "mdi:current-dc"
 ICON_BATTERY_OUTLINE = "mdi:battery-outline"
+ICON_BATTERY_CLOCK = "mdi:battery-clock"
 ICON_THERMOMETER_CHEVRON_UP = "mdi:thermometer-chevron-up"
 ICON_THERMOMETER_CHEVRON_DOWN = "mdi:thermometer-chevron-down"
 ICON_CAR_BATTERY = "mdi:car-battery"
+ICON_MAP_MARKER_DISTANCE = "mdi:map-marker-distance"
+ICON_SCALE_BALANCE = "mdi:scale-balance"
 
 UNIT_AMPERE_HOUR = "Ah"
 
@@ -76,6 +94,11 @@ TYPES = [
     CONF_TEMPS_NUMBER,
     CONF_REMAINING_CAPACITY,
     CONF_CYCLES,
+    CONF_BALANCE_CURRENT,
+    CONF_POWER,
+    CONF_ENERGY,
+    CONF_REMAINING_MILEAGE,
+    CONF_REMAINING_CHARGING_TIME,
     CONF_TEMPERATURE_1,
     CONF_TEMPERATURE_2,
     CONF_TEMPERATURE_3,
@@ -204,13 +227,18 @@ CONFIG_SCHEMA = (
                 unit_of_measurement=UNIT_AMPERE_HOUR,
                 icon=ICON_GAUGE,
                 accuracy_decimals=1,
-                device_class=DEVICE_CLASS_VOLTAGE,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_CYCLES): sensor.sensor_schema(
                 unit_of_measurement=UNIT_EMPTY,
                 icon=ICON_COUNTER,
                 accuracy_decimals=0,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
+            cv.Optional(CONF_BALANCE_CURRENT): sensor.sensor_schema(
+                unit_of_measurement=UNIT_AMPERE,
+                icon=ICON_SCALE_BALANCE,
+                accuracy_decimals=1,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_CELLS_NUMBER): sensor.sensor_schema(
@@ -220,6 +248,32 @@ CONFIG_SCHEMA = (
             cv.Optional(CONF_TEMPS_NUMBER): sensor.sensor_schema(
                 icon=ICON_COUNTER,
                 accuracy_decimals=0,
+            ),
+            cv.Optional(CONF_POWER): sensor.sensor_schema(
+                unit_of_measurement=UNIT_WATT,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_POWER,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
+            cv.Optional(CONF_ENERGY): sensor.sensor_schema(
+                unit_of_measurement=UNIT_WATT_HOURS,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_ENERGY,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
+            cv.Optional(CONF_REMAINING_MILEAGE): sensor.sensor_schema(
+                unit_of_measurement=UNIT_KILOMETER,
+                icon=ICON_MAP_MARKER_DISTANCE,
+                accuracy_decimals=1,
+                device_class=DEVICE_CLASS_DISTANCE,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
+            cv.Optional(CONF_REMAINING_CHARGING_TIME): sensor.sensor_schema(
+                unit_of_measurement=UNIT_MINUTE,
+                icon=ICON_BATTERY_CLOCK,
+                accuracy_decimals=1,
+                device_class=DEVICE_CLASS_DURATION,
+                state_class=STATE_CLASS_MEASUREMENT,
             ),
             cv.Optional(CONF_TEMPERATURE_1): TEMPERATURE_SENSOR_SCHEMA,
             cv.Optional(CONF_TEMPERATURE_2): TEMPERATURE_SENSOR_SCHEMA,

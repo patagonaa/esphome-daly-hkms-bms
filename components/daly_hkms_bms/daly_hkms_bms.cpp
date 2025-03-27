@@ -24,43 +24,18 @@ void DalyHkmsBmsComponent::set_daly_address(uint8_t daly_address) {
   this->set_address(modbus_response_address);
 }
 
-void DalyHkmsBmsComponent::loop() {
-  if (this->waiting_to_update_ && this->send_queue_.empty()) {
-    this->waiting_to_update_ = false;
-    if(this->cell_voltage_sensors_max_ > 0) {
-      this->send_queue_.push_back({
-        .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
-        .addr = DALY_MODBUS_ADDR_CELL_VOLT_1,
-        .data = this->cell_voltage_sensors_max_ // avoid reading all 48 cell voltages if we only want 16 or so
-      });
-    }
-    this->send_queue_.push_back({
-      .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
-      .addr = DALY_MODBUS_ADDR_CELL_TEMP_1,
-      .data = DALY_MODBUS_ADDR_CELL_TEMP_DIFF - DALY_MODBUS_ADDR_CELL_TEMP_1 + 1
-    });
-    this->send_queue_.push_back({
-      .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
-      .addr = DALY_MODBUS_ADDR_CHG_DSCHG_STATUS,
-      .data = DALY_MODBUS_ADDR_HEATING_TEMP - DALY_MODBUS_ADDR_CHG_DSCHG_STATUS + 1
-    });
-  }
+void DalyHkmsBmsComponent::setup() {
+  command_queue_ = DalyHkmsCommandQueue::get_for_modbus(this->parent_);
+}
 
+void DalyHkmsBmsComponent::loop() {
   // The bus might be slow, or there might be other devices, or other components might be talking to our device.
   if (this->waiting_for_response()) {
     return;
   }
 
   QueueItem to_send;
-  if (this->pending_request_.cmd != 0) {
-    to_send = this->pending_request_;
-    // response timeout -> resend pending request
-  } else if(!this->send_queue_.empty()) {
-    // send next item from queue
-    to_send = this->send_queue_.front();
-    this->send_queue_.pop_front();
-  } else {
-    // queue empty, nothing to do -> return
+  if (!command_queue_->try_get_to_send(daly_address_, &to_send)) {
     return;
   }
 
@@ -71,8 +46,8 @@ void DalyHkmsBmsComponent::loop() {
     case MODBUS_CMD_READ_HOLDING_REGISTERS:
     {
       ESP_LOGD(TAG, "Sending modbus read request to %d: start register %d, register count %d", this->daly_address_,
-        to_send.addr, to_send.data);
-      this->parent_->send(modbus_device_request_address, MODBUS_CMD_READ_HOLDING_REGISTERS, to_send.addr, to_send.data,
+        to_send.register_address, to_send.data);
+      this->parent_->send(modbus_device_request_address, MODBUS_CMD_READ_HOLDING_REGISTERS, to_send.register_address, to_send.data,
         0, nullptr);
       break;
     }
@@ -81,23 +56,58 @@ void DalyHkmsBmsComponent::loop() {
       ESP_LOGE(TAG, "Invalid command %d", to_send.cmd);
       return;
   }
-
-  this->pending_request_ = to_send;
 }
 
 void DalyHkmsBmsComponent::update() {
-  waiting_to_update_ = true;
+  if (this->cell_voltage_sensors_max_ > 0) {
+    this->command_queue_->add_or_update(false, 
+      {
+        .daly_address = this->daly_address_,
+        .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
+        .register_address = DALY_MODBUS_ADDR_CELL_VOLT_1,
+        .data = this->cell_voltage_sensors_max_ // avoid reading all 48 cell voltages if we only want 16 or so
+      });
+  }
+
+
+  this->command_queue_->add_or_update(false, 
+    {
+      .daly_address = this->daly_address_,
+      .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
+      .register_address = DALY_MODBUS_ADDR_CELL_TEMP_1,
+      .data = DALY_MODBUS_ADDR_CELL_TEMP_DIFF - DALY_MODBUS_ADDR_CELL_TEMP_1 + 1
+    });
+  this->command_queue_->add_or_update(false, 
+    {
+      .daly_address = this->daly_address_,
+      .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
+      .register_address = DALY_MODBUS_ADDR_CHG_DSCHG_STATUS,
+      .data = DALY_MODBUS_ADDR_HEATING_TEMP - DALY_MODBUS_ADDR_CHG_DSCHG_STATUS + 1
+    });
+  // this->command_queue_->add_or_update(false, 
+  //   {
+  //     .daly_address = this->daly_address_,
+  //     .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
+  //     .register_address = DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_1,
+  //     .data = DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_7 - DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_1 + 1
+  //   });
+  // this->command_queue_->add_or_update(false, 
+  //   {
+  //     .daly_address = this->daly_address_,
+  //     .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
+  //     .register_address = DALY_MODBUS_ADDR_CHG_MOS_CONTROL,
+  //     .data = DALY_MODBUS_ADDR_DSCHG_MOS_CONTROL - DALY_MODBUS_ADDR_CHG_MOS_CONTROL + 1
+  //   });
 }
 
 void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
   // Other components might be sending commands to our device. But we don't get called with enough
   // context to know what is what. So if we didn't do a send, we ignore the data.
-  if (!this->pending_request_.cmd) {
+  QueueItem request;
+  if (!this->command_queue_->pop_pending(this->daly_address_, &request)) {
     ESP_LOGD(TAG, "Got data without requesting it first");
     return;
   }
-  QueueItem request = this->pending_request_;
-  this->pending_request_.cmd = 0; // set to not pending
 
   ESP_LOGD(TAG, "Got modbus response: %d bytes", data.size());
 
@@ -106,7 +116,7 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
 
   switch (request.cmd) {
     case MODBUS_CMD_READ_HOLDING_REGISTERS:
-      register_offset = request.addr;
+      register_offset = request.register_address;
       register_count = request.data;
       break;
     

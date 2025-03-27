@@ -12,6 +12,7 @@
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #endif
 #include "esphome/components/modbus/modbus.h"
+#include "daly_hkms_bms_queue.h"
 
 #include <vector>
 
@@ -22,6 +23,7 @@ static const uint8_t DALY_MODBUS_MAX_CELL_COUNT = 48;
 
 class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevice {
  public:
+  void setup() override;
   void loop() override;
   void update() override;
   void on_modbus_data(const std::vector<uint8_t> &data) override;
@@ -81,21 +83,12 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
 #endif
 
  protected:
-  bool waiting_to_update_;
   uint8_t daly_address_;
 
   sensor::Sensor *cell_voltage_sensors_[DALY_MODBUS_MAX_CELL_COUNT]{};
   uint16_t cell_voltage_sensors_max_{0};
 
-  struct QueueItem
-  {
-    uint8_t cmd;
-    uint16_t addr;
-    uint16_t data;
-  };
-
-  std::deque<QueueItem> send_queue_{};
-  QueueItem pending_request_;
+  DalyHkmsCommandQueue *command_queue_;
 };
 
 }  // namespace daly_hkms_bms

@@ -37,7 +37,12 @@ void DalyHkmsBmsComponent::loop() {
     this->send_queue_.push_back({
       .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
       .addr = DALY_MODBUS_ADDR_CELL_TEMP_1,
-      .data = DALY_MODBUS_ADDR_HEATING_TEMP - DALY_MODBUS_ADDR_CELL_TEMP_1 + 1
+      .data = DALY_MODBUS_ADDR_CELL_TEMP_DIFF - DALY_MODBUS_ADDR_CELL_TEMP_1 + 1
+    });
+    this->send_queue_.push_back({
+      .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
+      .addr = DALY_MODBUS_ADDR_CHG_DSCHG_STATUS,
+      .data = DALY_MODBUS_ADDR_HEATING_TEMP - DALY_MODBUS_ADDR_CHG_DSCHG_STATUS + 1
     });
   }
 

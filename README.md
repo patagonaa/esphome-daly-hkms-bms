@@ -27,6 +27,9 @@ There can be multiple BMS attached to one modbus. To make this work, each BMS ne
 - **modbus_id**: ID of the [modbus component](https://esphome.io/components/modbus.html) the BMS is attached to
 - **address**: The address / board number of the BMS
 - **update_interval**: Delay between data requests (default `30s`)
+- **update_interval_fast**:
+    Delay between interjected "fast" data requests (includes only voltage and current, default: off).
+    Be aware that fast requests always have priority, so if normal updates dont (always) work, this might be set too low.
 
 ### Sensor component
 

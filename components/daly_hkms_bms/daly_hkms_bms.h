@@ -26,10 +26,15 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
   void setup() override;
   void loop() override;
   void update() override;
+  void update_fast();
   void on_modbus_data(const std::vector<uint8_t> &data) override;
   void dump_config() override;
 
   void set_daly_address(uint8_t address);
+
+  void set_update_interval_fast(uint32_t update_interval_fast) {
+    update_interval_fast_ = update_interval_fast;
+  }
 
 #ifdef USE_SENSOR
   void set_cell_voltage_sensor(uint16_t cell, sensor::Sensor *sensor) {
@@ -84,6 +89,7 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
 
  protected:
   uint8_t daly_address_;
+  uint32_t update_interval_fast_;
 
   sensor::Sensor *cell_voltage_sensors_[DALY_MODBUS_MAX_CELL_COUNT]{};
   uint16_t cell_voltage_sensors_max_{0};

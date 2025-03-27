@@ -26,6 +26,9 @@ void DalyHkmsBmsComponent::set_daly_address(uint8_t daly_address) {
 
 void DalyHkmsBmsComponent::setup() {
   command_queue_ = DalyHkmsCommandQueue::get_for_modbus(this->parent_);
+
+  if (this->update_interval_fast_ > 0)
+    this->set_interval("update_fast", this->update_interval_fast_, [this]() { this->update_fast(); });
 }
 
 void DalyHkmsBmsComponent::loop() {
@@ -98,6 +101,16 @@ void DalyHkmsBmsComponent::update() {
   //     .register_address = DALY_MODBUS_ADDR_CHG_MOS_CONTROL,
   //     .data = DALY_MODBUS_ADDR_DSCHG_MOS_CONTROL - DALY_MODBUS_ADDR_CHG_MOS_CONTROL + 1
   //   });
+}
+
+void DalyHkmsBmsComponent::update_fast() {
+  this->command_queue_->add_or_update(true, 
+    {
+      .daly_address = this->daly_address_,
+      .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
+      .register_address = DALY_MODBUS_ADDR_VOLT,
+      .data = DALY_MODBUS_ADDR_CURR - DALY_MODBUS_ADDR_VOLT + 1
+    });
 }
 
 void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {

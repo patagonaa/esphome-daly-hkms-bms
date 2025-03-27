@@ -14,6 +14,7 @@ static const uint8_t DALY_MODBUS_REQUEST_ADDRESS_OFFSET = 0x80;
 static const uint8_t DALY_MODBUS_RESPONSE_ADDRESS_OFFSET = 0x50;
 
 static const uint8_t MODBUS_CMD_READ_HOLDING_REGISTERS = 0x03;
+static const uint8_t MODBUS_CMD_WRITE_SINGLE_REGISTER = 0x06;
 
 void DalyHkmsBmsComponent::set_daly_address(uint8_t daly_address) {
   this->daly_address_ = daly_address;
@@ -48,10 +49,20 @@ void DalyHkmsBmsComponent::loop() {
   switch (to_send.cmd) {
     case MODBUS_CMD_READ_HOLDING_REGISTERS:
     {
-      ESP_LOGD(TAG, "Sending modbus read request to %d: start register %d, register count %d", this->daly_address_,
+      ESP_LOGD(TAG, "Sending modbus read request to %d: start register %" PRIu16 ", register count %" PRIu16, this->daly_address_,
         to_send.register_address, to_send.data);
       this->parent_->send(modbus_device_request_address, MODBUS_CMD_READ_HOLDING_REGISTERS, to_send.register_address, to_send.data,
         0, nullptr);
+      break;
+    }
+    case MODBUS_CMD_WRITE_SINGLE_REGISTER:
+    {
+      ESP_LOGD(TAG, "Sending modbus write request to %d: register %" PRIu16 ", value %" PRIu16, this->daly_address_,
+        to_send.register_address, to_send.data);
+      
+        uint8_t reg_value[2] = { uint8_t((to_send.data >> 8) & 0xFF), uint8_t(to_send.data & 0xFF) };
+      this->parent_->send(modbus_device_request_address, MODBUS_CMD_WRITE_SINGLE_REGISTER, to_send.register_address, 1,
+        2, reg_value);
       break;
     }
   
@@ -59,6 +70,16 @@ void DalyHkmsBmsComponent::loop() {
       ESP_LOGE(TAG, "Invalid command %d", to_send.cmd);
       return;
   }
+}
+
+void DalyHkmsBmsComponent::write_register(uint16_t reg, uint16_t value) {
+  this->command_queue_->add_or_update(true, 
+    {
+      .daly_address = this->daly_address_,
+      .cmd = MODBUS_CMD_WRITE_SINGLE_REGISTER,
+      .register_address = reg,
+      .data = value
+    });
 }
 
 void DalyHkmsBmsComponent::update() {
@@ -71,7 +92,6 @@ void DalyHkmsBmsComponent::update() {
         .data = this->cell_voltage_sensors_max_ // avoid reading all 48 cell voltages if we only want 16 or so
       });
   }
-
 
   this->command_queue_->add_or_update(false, 
     {
@@ -94,13 +114,13 @@ void DalyHkmsBmsComponent::update() {
   //     .register_address = DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_1,
   //     .data = DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_7 - DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_1 + 1
   //   });
-  // this->command_queue_->add_or_update(false, 
-  //   {
-  //     .daly_address = this->daly_address_,
-  //     .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
-  //     .register_address = DALY_MODBUS_ADDR_CHG_MOS_CONTROL,
-  //     .data = DALY_MODBUS_ADDR_DSCHG_MOS_CONTROL - DALY_MODBUS_ADDR_CHG_MOS_CONTROL + 1
-  //   });
+  this->command_queue_->add_or_update(false, 
+    {
+      .daly_address = this->daly_address_,
+      .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
+      .register_address = DALY_MODBUS_ADDR_CHG_MOS_CONTROL,
+      .data = DALY_MODBUS_ADDR_DSCHG_MOS_CONTROL - DALY_MODBUS_ADDR_CHG_MOS_CONTROL + 1
+    });
 }
 
 void DalyHkmsBmsComponent::update_fast() {
@@ -132,7 +152,10 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
       register_offset = request.register_address;
       register_count = request.data;
       break;
-    
+    case MODBUS_CMD_WRITE_SINGLE_REGISTER:
+      register_offset = request.register_address;
+      register_count = 1;
+      break;
     default:
       ESP_LOGE(TAG, "Invalid command %d", request.cmd);
       return;
@@ -264,6 +287,12 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
     this->precharging_mos_enabled_binary_sensor_->publish_state(get_register(DALY_MODBUS_ADDR_PRECHG_MOS_ACTIVE) > 0);
   }
 #endif
+
+  for (auto &input : this->registered_inputs_) {
+    uint16_t address = input->get_reg_addr();
+    if (has_register(address))
+      input->handle_update(get_register(address));
+  }
 }
 
 void DalyHkmsBmsComponent::dump_config() {

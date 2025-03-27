@@ -122,6 +122,23 @@ binary_sensor:
 - **discharging_mos_enabled**: BMS discharging MOS status.
 - **precharging_mos_enabled**: BMS precharging MOS status.
 
+### Switch component
+
+```yaml
+switch:
+  - platform: daly_hkms_bms
+    daly_hkms_bms_id: bms_1
+    charge_mos:
+      name: "BMS charge FET"
+    discharge_mos:
+      name: "BMS discharge FET"
+```
+
+#### Options:
+- **daly_hkms_bms_id**: ID of the daly_hkms_bms component (required for multiple BMS).
+- **charge_mos**: BMS charging MOS switch.
+- **discharge_mos**: BMS discharging MOS switch.
+
 ### Full Example:
 ```yaml
 external_components:
@@ -189,6 +206,14 @@ binary_sensor:
       name: "BMS charging FET enabled"
     discharging_mos_enabled:
       name: "BMS discharging FET enabled"
+
+switch:
+  - platform: daly_hkms_bms
+    daly_hkms_bms_id: bms_1
+    charge_mos:
+      name: "BMS charge FET"
+    discharge_mos:
+      name: "BMS discharge FET"
 ```
 
 ## BMS connection

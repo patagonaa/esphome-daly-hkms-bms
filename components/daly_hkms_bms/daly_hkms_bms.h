@@ -21,6 +21,13 @@ namespace daly_hkms_bms {
 
 static const uint8_t DALY_MODBUS_MAX_CELL_COUNT = 48;
 
+class DalyHkmsBmsInput {
+  public:
+    DalyHkmsBmsInput() {}
+    virtual uint16_t get_reg_addr() = 0;
+    virtual void handle_update(uint16_t value) = 0;
+ };
+
 class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevice {
  public:
   void setup() override;
@@ -34,6 +41,12 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
 
   void set_update_interval_fast(uint32_t update_interval_fast) {
     update_interval_fast_ = update_interval_fast;
+  }
+
+  void write_register(uint16_t reg, uint16_t value);
+
+  void register_input(DalyHkmsBmsInput *input) {
+    this->registered_inputs_.push_back(input);
   }
 
 #ifdef USE_SENSOR
@@ -91,11 +104,16 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
   uint8_t daly_address_;
   uint32_t update_interval_fast_;
 
+#ifdef USE_SENSOR
   sensor::Sensor *cell_voltage_sensors_[DALY_MODBUS_MAX_CELL_COUNT]{};
+#endif
+  std::vector<DalyHkmsBmsInput*> registered_inputs_{};
   uint16_t cell_voltage_sensors_max_{0};
 
   DalyHkmsCommandQueue *command_queue_;
 };
+
+
 
 }  // namespace daly_hkms_bms
 }  // namespace esphome

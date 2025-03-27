@@ -64,6 +64,11 @@ sensor:
 - **battery_level**: Battery level in % (SoC).
 - **remaining_capacity**: The capacity in Ah left in the battery.
 - **cycles**: The number of charge cycles of the battery.
+- **balance_current** (not supported on all BMS versions)
+- **power**: Power (positive when charging, negative when discharging)
+- **charge_power**: Charge power (always positive)
+- **discharge_power**: Discharge power (always positive)
+- **energy**: (not supported on all BMS versions)
 - **temperature_mos**: The BMS MOSFET temperature.
 - **temperature_board**: The BMS PCB temperature (might not be available on all models).
 - **temps_number**: The number of temperature sensors.

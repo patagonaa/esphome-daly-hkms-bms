@@ -82,7 +82,6 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
 
  protected:
   bool waiting_to_update_;
-  uint32_t last_send_;
   uint8_t daly_address_;
 
   sensor::Sensor *cell_voltage_sensors_[DALY_MODBUS_MAX_CELL_COUNT]{};

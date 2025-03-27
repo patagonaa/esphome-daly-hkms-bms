@@ -41,12 +41,6 @@ void DalyHkmsBmsComponent::loop() {
     });
   }
 
-  // If our last send has had no reply yet, and it wasn't that long ago, do nothing.
-  uint32_t now = millis();
-  if (now - this->last_send_ < this->get_update_interval() / 2) {
-    return;
-  }
-
   // The bus might be slow, or there might be other devices, or other components might be talking to our device.
   if (this->waiting_for_response()) {
     return;
@@ -55,7 +49,7 @@ void DalyHkmsBmsComponent::loop() {
   QueueItem to_send;
   if (this->pending_request_.cmd != 0) {
     to_send = this->pending_request_;
-    // resend pending request
+    // response timeout -> resend pending request
   } else if(!this->send_queue_.empty()) {
     // send next item from queue
     to_send = this->send_queue_.front();
@@ -84,7 +78,6 @@ void DalyHkmsBmsComponent::loop() {
   }
 
   this->pending_request_ = to_send;
-  this->last_send_ = millis();
 }
 
 void DalyHkmsBmsComponent::update() {
@@ -94,12 +87,11 @@ void DalyHkmsBmsComponent::update() {
 void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
   // Other components might be sending commands to our device. But we don't get called with enough
   // context to know what is what. So if we didn't do a send, we ignore the data.
-  if (!this->last_send_) {
+  if (!this->pending_request_.cmd) {
     ESP_LOGD(TAG, "Got data without requesting it first");
     return;
   }
   QueueItem request = this->pending_request_;
-  this->last_send_ = 0;
   this->pending_request_.cmd = 0; // set to not pending
 
   ESP_LOGD(TAG, "Got modbus response: %d bytes", data.size());

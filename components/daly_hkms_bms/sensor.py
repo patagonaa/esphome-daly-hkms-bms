@@ -15,8 +15,6 @@ from esphome.const import (
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_POWER,
     DEVICE_CLASS_ENERGY,
-    DEVICE_CLASS_DURATION,
-    DEVICE_CLASS_DISTANCE,
     STATE_CLASS_MEASUREMENT,
     UNIT_EMPTY,
     UNIT_VOLT,
@@ -25,8 +23,6 @@ from esphome.const import (
     UNIT_CELSIUS,
     UNIT_WATT,
     UNIT_WATT_HOURS,
-    UNIT_KILOMETER,
-    UNIT_MINUTE,
     ICON_FLASH,
     ICON_PERCENT,
     ICON_COUNTER,
@@ -52,19 +48,14 @@ CONF_BALANCE_CURRENT = "balance_current"
 CONF_CHARGE_POWER = "charge_power"
 CONF_DISCHARGE_POWER = "discharge_power"
 
-CONF_REMAINING_MILEAGE = "remaining_mileage"
-CONF_REMAINING_CHARGING_TIME = "remaining_charging_time"
-
 CONF_TEMPERATURE_MOS = "temperature_mos"
 CONF_TEMPERATURE_BOARD = "temperature_board"
 
 ICON_CURRENT_DC = "mdi:current-dc"
 ICON_BATTERY_OUTLINE = "mdi:battery-outline"
-ICON_BATTERY_CLOCK = "mdi:battery-clock"
 ICON_THERMOMETER_CHEVRON_UP = "mdi:thermometer-chevron-up"
 ICON_THERMOMETER_CHEVRON_DOWN = "mdi:thermometer-chevron-down"
 ICON_CAR_BATTERY = "mdi:car-battery"
-ICON_MAP_MARKER_DISTANCE = "mdi:map-marker-distance"
 ICON_SCALE_BALANCE = "mdi:scale-balance"
 
 UNIT_AMPERE_HOUR = "Ah"
@@ -96,8 +87,6 @@ TYPES = [
     CONF_ENERGY,
     CONF_TEMPERATURE_MOS,
     CONF_TEMPERATURE_BOARD,
-    CONF_REMAINING_MILEAGE,
-    CONF_REMAINING_CHARGING_TIME,
     # Cell voltages and temperatures are handled by loops below
 ]
 
@@ -275,20 +264,6 @@ CONFIG_SCHEMA = (
             ),
             cv.Optional(CONF_TEMPERATURE_MOS): TEMPERATURE_SENSOR_SCHEMA,
             cv.Optional(CONF_TEMPERATURE_BOARD): TEMPERATURE_SENSOR_SCHEMA,
-            cv.Optional(CONF_REMAINING_MILEAGE): sensor.sensor_schema(
-                unit_of_measurement=UNIT_KILOMETER,
-                icon=ICON_MAP_MARKER_DISTANCE,
-                accuracy_decimals=1,
-                device_class=DEVICE_CLASS_DISTANCE,
-                state_class=STATE_CLASS_MEASUREMENT,
-            ),
-            cv.Optional(CONF_REMAINING_CHARGING_TIME): sensor.sensor_schema(
-                unit_of_measurement=UNIT_MINUTE,
-                icon=ICON_BATTERY_CLOCK,
-                accuracy_decimals=1,
-                device_class=DEVICE_CLASS_DURATION,
-                state_class=STATE_CLASS_MEASUREMENT,
-            ),
         }
     )
     .extend(get_cell_voltages_schema())

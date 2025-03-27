@@ -37,7 +37,7 @@ void DalyHkmsBmsComponent::loop() {
     this->send_queue_.push_back({
       .cmd = MODBUS_CMD_READ_HOLDING_REGISTERS,
       .addr = DALY_MODBUS_ADDR_CELL_TEMP_1,
-      .data = DALY_MODBUS_ADDR_REMAINING_CHARGING_TIME - DALY_MODBUS_ADDR_CELL_TEMP_1 + 1
+      .data = DALY_MODBUS_ADDR_HEATING_TEMP - DALY_MODBUS_ADDR_CELL_TEMP_1 + 1
     });
   }
 
@@ -209,9 +209,6 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
 
   publish_sensor_state(this->temperature_mos_sensor_, DALY_MODBUS_ADDR_MOS_TEMP, -40, 1, 255);
   publish_sensor_state(this->temperature_board_sensor_, DALY_MODBUS_ADDR_BOARD_TEMP, -40, 1, 255);
-
-  publish_sensor_state(this->remaining_mileage_sensor_, DALY_MODBUS_ADDR_REMAINING_MILEAGE, 0, 0.1);
-  publish_sensor_state(this->remaining_charging_time_sensor_, DALY_MODBUS_ADDR_REMAINING_CHARGING_TIME, 0, 0.1);
 
 #endif
 

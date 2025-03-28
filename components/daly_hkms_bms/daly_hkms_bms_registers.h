@@ -55,8 +55,13 @@ static const uint16_t DALY_MODBUS_ADDR_REMAINING_CHARGING_TIME = 0x64;
 static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_1_ERR_1 = 0x66;
 
 // 0x6D - 0x73
-static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_1 = 0x6D;
-static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_7 = 0x73;
+static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_00_01 = 0x6D;
+static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_02_03 = 0x6E;
+static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_04_05 = 0x6F;
+static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_06_07 = 0x70;
+static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_08_09 = 0x71;
+static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_10_11 = 0x72;
+static const uint16_t DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_12_13 = 0x73;
 
 static const uint16_t DALY_MODBUS_ADDR_CHG_MOS_CONTROL = 0x121;
 static const uint16_t DALY_MODBUS_ADDR_DSCHG_MOS_CONTROL = 0x122;

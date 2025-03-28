@@ -15,7 +15,9 @@ from esphome.const import (
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_POWER,
     DEVICE_CLASS_ENERGY,
+    DEVICE_CLASS_EMPTY,
     STATE_CLASS_MEASUREMENT,
+    STATE_CLASS_NONE,
     UNIT_EMPTY,
     UNIT_VOLT,
     UNIT_AMPERE,
@@ -51,12 +53,21 @@ CONF_DISCHARGE_POWER = "discharge_power"
 CONF_TEMPERATURE_MOS = "temperature_mos"
 CONF_TEMPERATURE_BOARD = "temperature_board"
 
+CONF_CELL_OVERVOLTAGE_ALARM_LEVEL = "cell_overvoltage_alarm_level"
+CONF_CELL_UNDERVOLTAGE_ALARM_LEVEL = "cell_undervoltage_alarm_level"
+CONF_CELL_VOLTAGE_DIFF_ALARM_LEVEL = "cell_voltage_diff_alarm_level"
+CONF_OVERVOLTAGE_ALARM_LEVEL = "overvoltage_alarm_level"
+CONF_UNDERVOLTAGE_ALARM_LEVEL = "undervoltage_alarm_level"
+CONF_CHARGE_OVERCURRENT_ALARM_LEVEL = "charge_overcurrent_alarm_level"
+CONF_DISCHARGE_OVERCURRENT_ALARM_LEVEL = "discharge_overcurrent_alarm_level"
+
 ICON_CURRENT_DC = "mdi:current-dc"
 ICON_BATTERY_OUTLINE = "mdi:battery-outline"
 ICON_THERMOMETER_CHEVRON_UP = "mdi:thermometer-chevron-up"
 ICON_THERMOMETER_CHEVRON_DOWN = "mdi:thermometer-chevron-down"
 ICON_CAR_BATTERY = "mdi:car-battery"
 ICON_SCALE_BALANCE = "mdi:scale-balance"
+ICON_BATTERY_ALERT = "mdi:battery-alert"
 
 UNIT_AMPERE_HOUR = "Ah"
 
@@ -87,6 +98,13 @@ TYPES = [
     CONF_ENERGY,
     CONF_TEMPERATURE_MOS,
     CONF_TEMPERATURE_BOARD,
+    CONF_CELL_OVERVOLTAGE_ALARM_LEVEL,
+    CONF_CELL_UNDERVOLTAGE_ALARM_LEVEL,
+    CONF_CELL_VOLTAGE_DIFF_ALARM_LEVEL,
+    CONF_OVERVOLTAGE_ALARM_LEVEL,
+    CONF_UNDERVOLTAGE_ALARM_LEVEL,
+    CONF_CHARGE_OVERCURRENT_ALARM_LEVEL,
+    CONF_DISCHARGE_OVERCURRENT_ALARM_LEVEL,
     # Cell voltages and temperatures are handled by loops below
 ]
 
@@ -264,6 +282,55 @@ CONFIG_SCHEMA = (
             ),
             cv.Optional(CONF_TEMPERATURE_MOS): TEMPERATURE_SENSOR_SCHEMA,
             cv.Optional(CONF_TEMPERATURE_BOARD): TEMPERATURE_SENSOR_SCHEMA,
+            cv.Optional(CONF_CELL_OVERVOLTAGE_ALARM_LEVEL): sensor.sensor_schema(
+                unit_of_measurement=UNIT_EMPTY,
+                icon=ICON_BATTERY_ALERT,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_EMPTY,
+                state_class=STATE_CLASS_NONE,
+            ),
+            cv.Optional(CONF_CELL_UNDERVOLTAGE_ALARM_LEVEL): sensor.sensor_schema(
+                unit_of_measurement=UNIT_EMPTY,
+                icon=ICON_BATTERY_ALERT,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_EMPTY,
+                state_class=STATE_CLASS_NONE,
+            ),
+            cv.Optional(CONF_CELL_VOLTAGE_DIFF_ALARM_LEVEL): sensor.sensor_schema(
+                unit_of_measurement=UNIT_EMPTY,
+                icon=ICON_BATTERY_ALERT,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_EMPTY,
+                state_class=STATE_CLASS_NONE,
+            ),
+            cv.Optional(CONF_OVERVOLTAGE_ALARM_LEVEL): sensor.sensor_schema(
+                unit_of_measurement=UNIT_EMPTY,
+                icon=ICON_BATTERY_ALERT,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_EMPTY,
+                state_class=STATE_CLASS_NONE,
+            ),
+            cv.Optional(CONF_UNDERVOLTAGE_ALARM_LEVEL): sensor.sensor_schema(
+                unit_of_measurement=UNIT_EMPTY,
+                icon=ICON_BATTERY_ALERT,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_EMPTY,
+                state_class=STATE_CLASS_NONE,
+            ),
+            cv.Optional(CONF_CHARGE_OVERCURRENT_ALARM_LEVEL): sensor.sensor_schema(
+                unit_of_measurement=UNIT_EMPTY,
+                icon=ICON_BATTERY_ALERT,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_EMPTY,
+                state_class=STATE_CLASS_NONE,
+            ),
+            cv.Optional(CONF_DISCHARGE_OVERCURRENT_ALARM_LEVEL): sensor.sensor_schema(
+                unit_of_measurement=UNIT_EMPTY,
+                icon=ICON_BATTERY_ALERT,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_EMPTY,
+                state_class=STATE_CLASS_NONE,
+            ),
         }
     )
     .extend(get_cell_voltages_schema())

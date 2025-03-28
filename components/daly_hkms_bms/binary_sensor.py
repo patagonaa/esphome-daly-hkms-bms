@@ -7,12 +7,16 @@ CONF_CHARGING_MOS_ENABLED = "charging_mos_enabled"
 CONF_DISCHARGING_MOS_ENABLED = "discharging_mos_enabled"
 CONF_PRECHARGING_MOS_ENABLED = "precharging_mos_enabled"
 CONF_BALANCING_ACTIVE = "balancing_active"
+CONF_HAS_ERRORS = "has_errors"
+
+ICON_BATTERY_ALERT = "mdi:battery-alert"
 
 TYPES = [
     CONF_CHARGING_MOS_ENABLED,
     CONF_DISCHARGING_MOS_ENABLED,
     CONF_PRECHARGING_MOS_ENABLED,
     CONF_BALANCING_ACTIVE,
+    CONF_HAS_ERRORS,
 ]
 
 CONFIG_SCHEMA = cv.All(
@@ -29,6 +33,7 @@ CONFIG_SCHEMA = cv.All(
                 CONF_PRECHARGING_MOS_ENABLED
             ): binary_sensor.binary_sensor_schema(),
             cv.Optional(CONF_BALANCING_ACTIVE): binary_sensor.binary_sensor_schema(),
+            cv.Optional(CONF_HAS_ERRORS): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
         }
     ).extend(cv.COMPONENT_SCHEMA)
 )

@@ -79,6 +79,13 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
   SUB_SENSOR(energy)
   SUB_SENSOR(temperature_mos)
   SUB_SENSOR(temperature_board)
+  SUB_SENSOR(cell_overvoltage_alarm_level)
+  SUB_SENSOR(cell_undervoltage_alarm_level)
+  SUB_SENSOR(cell_voltage_diff_alarm_level)
+  SUB_SENSOR(overvoltage_alarm_level)
+  SUB_SENSOR(undervoltage_alarm_level)
+  SUB_SENSOR(charge_overcurrent_alarm_level)
+  SUB_SENSOR(discharge_overcurrent_alarm_level)
   SUB_SENSOR(temperature_1)
   SUB_SENSOR(temperature_2)
   SUB_SENSOR(temperature_3)
@@ -98,6 +105,7 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
   SUB_BINARY_SENSOR(discharging_mos_enabled)
   SUB_BINARY_SENSOR(precharging_mos_enabled)
   SUB_BINARY_SENSOR(balancing_active)
+  SUB_BINARY_SENSOR(has_errors)
 #endif
 
  protected:

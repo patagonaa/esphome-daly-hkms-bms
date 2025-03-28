@@ -74,6 +74,13 @@ sensor:
 - **energy**: (not supported on all BMS versions)
 - **temperature_mos**: The BMS MOSFET temperature.
 - **temperature_board**: The BMS PCB temperature (might not be available on all models).
+- **cell_overvoltage_alarm_level**
+- **cell_undervoltage_alarm_level**
+- **cell_voltage_diff_alarm_level**
+- **overvoltage_alarm_level**
+- **undervoltage_alarm_level**
+- **charge_overcurrent_alarm_level**
+- **discharge_overcurrent_alarm_level**
 - **temps_number**: The number of temperature sensors.
 - **max_temperature**: The highest temperature measured from the temperature sensors.
 - **max_temperature_probe_number**: The sensor number which has measured the highest temperature.
@@ -113,6 +120,8 @@ binary_sensor:
       name: "BMS charging FET enabled"
     discharging_mos_enabled:
       name: "BMS discharging FET enabled"
+    has_errors:
+      name: "BMS has errors/warnings"
 ```
 
 #### Options:
@@ -121,6 +130,7 @@ binary_sensor:
 - **charging_mos_enabled**: BMS charging MOS status.
 - **discharging_mos_enabled**: BMS discharging MOS status.
 - **precharging_mos_enabled**: BMS precharging MOS status.
+- **has_errors**: BMS warning/error status.
 
 ### Switch component
 

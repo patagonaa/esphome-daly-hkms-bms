@@ -9,6 +9,10 @@ CONF_PRECHARGING_MOS_ENABLED = "precharging_mos_enabled"
 CONF_BALANCING_ACTIVE = "balancing_active"
 CONF_HAS_ERRORS = "has_errors"
 
+ICON_BATTERY_ARROW_UP = "mdi:battery-arrow-up"
+ICON_BATTERY_ARROW_DOWN = "mdi:battery-arrow-down"
+ICON_SLOPE_UPHILL = "mdi:slope-uphill"
+ICON_SCALE_BALANCE = "mdi:scale-balance"
 ICON_BATTERY_ALERT = "mdi:battery-alert"
 
 TYPES = [
@@ -25,14 +29,14 @@ CONFIG_SCHEMA = cv.All(
             cv.GenerateID(CONF_DALY_HKMS_BMS_ID): cv.use_id(DalyHkmsBmsComponent),
             cv.Optional(
                 CONF_CHARGING_MOS_ENABLED
-            ): binary_sensor.binary_sensor_schema(),
+            ): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ARROW_UP),
             cv.Optional(
                 CONF_DISCHARGING_MOS_ENABLED
-            ): binary_sensor.binary_sensor_schema(),
+            ): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ARROW_DOWN),
             cv.Optional(
                 CONF_PRECHARGING_MOS_ENABLED
-            ): binary_sensor.binary_sensor_schema(),
-            cv.Optional(CONF_BALANCING_ACTIVE): binary_sensor.binary_sensor_schema(),
+            ): binary_sensor.binary_sensor_schema(icon=ICON_SLOPE_UPHILL),
+            cv.Optional(CONF_BALANCING_ACTIVE): binary_sensor.binary_sensor_schema(icon=ICON_SCALE_BALANCE),
             cv.Optional(CONF_HAS_ERRORS): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
         }
     ).extend(cv.COMPONENT_SCHEMA)

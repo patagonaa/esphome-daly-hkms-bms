@@ -351,12 +351,11 @@ async def setup_cell_voltage_conf(config, cell, hub):
         sens = await sensor.new_sensor(sensor_config)
         cg.add(hub.set_cell_voltage_sensor(cell, sens))
 
-
 async def to_code(config):
     hub = await cg.get_variable(config[CONF_DALY_HKMS_BMS_ID])
     for i in range(1, MAX_CELL_NUMBER + 1):
         await setup_cell_voltage_conf(config, i, hub)
     for i in range(1, MAX_TEMP_NUMBER + 1):
-        await setup_cell_voltage_conf(config, get_temperature_sensor_key(i), hub)
+        await setup_conf(config, get_temperature_sensor_key(i), hub)
     for key in TYPES:
         await setup_conf(config, key, hub)

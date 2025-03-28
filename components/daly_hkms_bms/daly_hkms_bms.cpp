@@ -317,6 +317,27 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
   if (this->balancing_active_binary_sensor_ && has_register(DALY_MODBUS_ADDR_BALANCE_STATUS)) {
     this->balancing_active_binary_sensor_->publish_state(get_register(DALY_MODBUS_ADDR_BALANCE_STATUS) > 0);
   }
+
+  if (has_register(DALY_MODBUS_ADDR_BALANCE_STATUS_PER_CELL_01_TO_16) && has_register(DALY_MODBUS_ADDR_BALANCE_STATUS_PER_CELL_33_TO_48)) {
+    uint16_t reg_val = get_register(DALY_MODBUS_ADDR_BALANCE_STATUS_PER_CELL_01_TO_16);
+    for (uint16_t i = 0; i < std::min<uint16_t>(this->cell_balancing_sensors_max_, 16); i++) {
+      if (this->cell_balancing_sensors_[i] != nullptr)
+        this->cell_balancing_sensors_[i]->publish_state(reg_val & (1 << i));
+    }
+
+    reg_val = get_register(DALY_MODBUS_ADDR_BALANCE_STATUS_PER_CELL_17_TO_32);
+    for (uint16_t i = 16; i < std::min<uint16_t>(this->cell_balancing_sensors_max_, 32); i++) {
+      if (this->cell_balancing_sensors_[i] != nullptr)
+        this->cell_balancing_sensors_[i]->publish_state(reg_val & (1 << (i-16)));
+    }
+
+    reg_val = get_register(DALY_MODBUS_ADDR_BALANCE_STATUS_PER_CELL_33_TO_48);
+    for (uint16_t i = 32; i < std::min<uint16_t>(this->cell_balancing_sensors_max_, 48); i++) {
+      if (this->cell_balancing_sensors_[i] != nullptr)
+        this->cell_balancing_sensors_[i]->publish_state(reg_val & (1 << (i-32)));
+    }
+  }  
+
   if (this->charging_mos_enabled_binary_sensor_ && has_register(DALY_MODBUS_ADDR_CHG_MOS_ACTIVE)) {
     this->charging_mos_enabled_binary_sensor_->publish_state(get_register(DALY_MODBUS_ADDR_CHG_MOS_ACTIVE) > 0);
   }

@@ -9,6 +9,7 @@ DEPENDENCIES = ["modbus"]
 
 CONF_DALY_HKMS_BMS_ID = "daly_hkms_bms_id"
 CONF_UPDATE_INTERVAL_FAST = "update_interval_fast"
+MAX_CELL_NUMBER = 48
 
 daly_hkms_bms_ns = cg.esphome_ns.namespace("daly_hkms_bms")
 DalyHkmsBmsComponent = daly_hkms_bms_ns.class_(

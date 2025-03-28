@@ -106,6 +106,12 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
   SUB_BINARY_SENSOR(precharging_mos_enabled)
   SUB_BINARY_SENSOR(balancing_active)
   SUB_BINARY_SENSOR(has_errors)
+
+  void set_cell_balancing_sensor(uint16_t cell, binary_sensor::BinarySensor *sensor) {
+    if (cell > this->cell_balancing_sensors_max_)
+      this->cell_balancing_sensors_max_ = cell;
+    this->cell_balancing_sensors_[cell - 1] = sensor;
+  };
 #endif
 
  protected:
@@ -115,9 +121,14 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
 #ifdef USE_SENSOR
   sensor::Sensor *cell_voltage_sensors_[DALY_MODBUS_MAX_CELL_COUNT]{};
 #endif
-  std::vector<DalyHkmsBmsInput*> registered_inputs_{};
   uint16_t cell_voltage_sensors_max_{0};
 
+#ifdef USE_BINARY_SENSOR
+  binary_sensor::BinarySensor *cell_balancing_sensors_[DALY_MODBUS_MAX_CELL_COUNT]{};
+#endif
+  uint16_t cell_balancing_sensors_max_{0};
+
+  std::vector<DalyHkmsBmsInput*> registered_inputs_{};
   DalyHkmsCommandQueue *command_queue_;
 };
 

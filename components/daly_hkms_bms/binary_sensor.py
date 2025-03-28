@@ -1,7 +1,8 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import binary_sensor
-from . import DalyHkmsBmsComponent, CONF_DALY_HKMS_BMS_ID
+
+from . import DalyHkmsBmsComponent, CONF_DALY_HKMS_BMS_ID, MAX_CELL_NUMBER
 
 CONF_CHARGING_MOS_ENABLED = "charging_mos_enabled"
 CONF_DISCHARGING_MOS_ENABLED = "discharging_mos_enabled"
@@ -23,6 +24,17 @@ TYPES = [
     CONF_HAS_ERRORS,
 ]
 
+def get_cell_balancing_key(cell):
+    return f"cell_{cell}_balancing"
+
+CELL_BALANCING_SCHEMA = binary_sensor.binary_sensor_schema(icon=ICON_SCALE_BALANCE)
+
+def get_cell_balancing_schema():
+    schema_obj = {}
+    for i in range(1, MAX_CELL_NUMBER + 1):
+        schema_obj[cv.Optional(get_cell_balancing_key(i))] = CELL_BALANCING_SCHEMA
+    return cv.Schema(schema_obj)
+
 CONFIG_SCHEMA = cv.All(
     cv.Schema(
         {
@@ -39,7 +51,9 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_BALANCING_ACTIVE): binary_sensor.binary_sensor_schema(icon=ICON_SCALE_BALANCE),
             cv.Optional(CONF_HAS_ERRORS): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
         }
-    ).extend(cv.COMPONENT_SCHEMA)
+    )
+    .extend(get_cell_balancing_schema())
+    .extend(cv.COMPONENT_SCHEMA)
 )
 
 
@@ -48,8 +62,15 @@ async def setup_conf(config, key, hub):
         var = await binary_sensor.new_binary_sensor(sensor_config)
         cg.add(getattr(hub, f"set_{key}_binary_sensor")(var))
 
+async def setup_cell_balancing_conf(config, cell, hub):
+    key = get_cell_balancing_key(cell)
+    if sensor_config := config.get(key):
+        sens = await binary_sensor.new_binary_sensor(sensor_config)
+        cg.add(hub.set_cell_balancing_sensor(cell, sens))
 
 async def to_code(config):
     hub = await cg.get_variable(config[CONF_DALY_HKMS_BMS_ID])
     for key in TYPES:
         await setup_conf(config, key, hub)
+    for i in range(1, MAX_CELL_NUMBER + 1):
+        await setup_cell_balancing_conf(config, i, hub)

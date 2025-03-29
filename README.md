@@ -135,6 +135,7 @@ binary_sensor:
 #### Options:
 - **daly_hkms_bms_id**: ID of the daly_hkms_bms component (required for multiple BMS).
 - **balancing_active**: Whether the BMS is currently balancing or not.
+- **cell_1_balancing**: Whether the cell is currently being balanced or not. Cell number can be from 1 to 48.
 - **charging_mos_enabled**: BMS charging MOS status.
 - **discharging_mos_enabled**: BMS discharging MOS status.
 - **precharging_mos_enabled**: BMS precharging MOS status.

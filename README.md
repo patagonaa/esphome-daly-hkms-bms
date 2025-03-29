@@ -74,13 +74,6 @@ sensor:
 - **energy**: (not supported on all BMS versions)
 - **temperature_mos**: The BMS MOSFET temperature.
 - **temperature_board**: The BMS PCB temperature (might not be available on all models).
-- **cell_overvoltage_alarm_level**
-- **cell_undervoltage_alarm_level**
-- **cell_voltage_diff_alarm_level**
-- **overvoltage_alarm_level**
-- **undervoltage_alarm_level**
-- **charge_overcurrent_alarm_level**
-- **discharge_overcurrent_alarm_level**
 - **temps_number**: The number of temperature sensors.
 - **max_temperature**: The highest temperature measured from the temperature sensors.
 - **max_temperature_probe_number**: The sensor number which has measured the highest temperature.
@@ -93,6 +86,21 @@ sensor:
 - **min_cell_voltage**: The cell of the battery with the lowest voltage.
 - **min_cell_voltage_number**: The cell number of the battery with the lowest voltage.
 - **cell_1_voltage**: The voltage of cell number 1. Cell number can be from 1 to 48.
+- **alarm_level_cell_overvoltage_sensor**
+- **alarm_level_cell_undervoltage_sensor**
+- **alarm_level_cell_voltage_diff_sensor**
+- **alarm_level_charge_overtemperature_sensor**
+- **alarm_level_charge_undertemperature_sensor**
+- **alarm_level_discharge_overtemperature_sensor**
+- **alarm_level_discharge_undertemperature_sensor**
+- **alarm_level_temperature_diff_sensor**
+- **alarm_level_overvoltage_sensor**
+- **alarm_level_undervoltage_sensor**
+- **alarm_level_charge_overcurrent_sensor**
+- **alarm_level_discharge_overcurrent_sensor**
+- **alarm_level_soc_low_sensor**
+- **alarm_level_soh_low_sensor**
+- **alarm_level_mos_overtemperature_sensor**
 
 ### Text Sensor component
 
@@ -131,6 +139,11 @@ binary_sensor:
 - **discharging_mos_enabled**: BMS discharging MOS status.
 - **precharging_mos_enabled**: BMS precharging MOS status.
 - **has_errors**: BMS warning/error status.
+- **error_charge_mos_overtemperature_binary_sensor**
+- **error_charge_mos_temperature_detect_binary_sensor**
+- **error_discharge_mos_overtemperature_binary_sensor**
+- **error_discharge_mos_temperature_detect_binary_sensor**
+- **error_short_circuit_binary_sensor**
 
 ### Switch component
 

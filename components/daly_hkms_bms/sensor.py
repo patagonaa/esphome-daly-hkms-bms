@@ -53,13 +53,21 @@ CONF_DISCHARGE_POWER = "discharge_power"
 CONF_TEMPERATURE_MOS = "temperature_mos"
 CONF_TEMPERATURE_BOARD = "temperature_board"
 
-CONF_CELL_OVERVOLTAGE_ALARM_LEVEL = "cell_overvoltage_alarm_level"
-CONF_CELL_UNDERVOLTAGE_ALARM_LEVEL = "cell_undervoltage_alarm_level"
-CONF_CELL_VOLTAGE_DIFF_ALARM_LEVEL = "cell_voltage_diff_alarm_level"
-CONF_OVERVOLTAGE_ALARM_LEVEL = "overvoltage_alarm_level"
-CONF_UNDERVOLTAGE_ALARM_LEVEL = "undervoltage_alarm_level"
-CONF_CHARGE_OVERCURRENT_ALARM_LEVEL = "charge_overcurrent_alarm_level"
-CONF_DISCHARGE_OVERCURRENT_ALARM_LEVEL = "discharge_overcurrent_alarm_level"
+CONF_ALARM_LEVEL_CELL_OVERVOLTAGE = "alarm_level_cell_overvoltage"
+CONF_ALARM_LEVEL_CELL_UNDERVOLTAGE = "alarm_level_cell_undervoltage"
+CONF_ALARM_LEVEL_CELL_VOLTAGE_DIFF = "alarm_level_cell_voltage_diff"
+CONF_ALARM_LEVEL_CHARGE_OVERTEMPERATURE = "alarm_level_charge_overtemperature"
+CONF_ALARM_LEVEL_CHARGE_UNDERTEMPERATURE = "alarm_level_charge_undertemperature"
+CONF_ALARM_LEVEL_DISCHARGE_OVERTEMPERATURE = "alarm_level_discharge_overtemperature"
+CONF_ALARM_LEVEL_DISCHARGE_UNDERTEMPERATURE = "alarm_level_discharge_undertemperature"
+CONF_ALARM_LEVEL_TEMPERATURE_DIFF = "alarm_level_temperature_diff"
+CONF_ALARM_LEVEL_OVERVOLTAGE = "alarm_level_overvoltage"
+CONF_ALARM_LEVEL_UNDERVOLTAGE = "alarm_level_undervoltage"
+CONF_ALARM_LEVEL_CHARGE_OVERCURRENT = "alarm_level_charge_overcurrent"
+CONF_ALARM_LEVEL_DISCHARGE_OVERCURRENT = "alarm_level_discharge_overcurrent"
+CONF_ALARM_LEVEL_SOC_LOW = "alarm_level_soc_low"
+CONF_ALARM_LEVEL_SOH_LOW = "alarm_level_soh_low"
+CONF_ALARM_LEVEL_MOS_OVERTEMPERATURE = "alarm_level_mos_overtemperature"
 
 ICON_CURRENT_DC = "mdi:current-dc"
 ICON_BATTERY_OUTLINE = "mdi:battery-outline"
@@ -97,13 +105,21 @@ TYPES = [
     CONF_ENERGY,
     CONF_TEMPERATURE_MOS,
     CONF_TEMPERATURE_BOARD,
-    CONF_CELL_OVERVOLTAGE_ALARM_LEVEL,
-    CONF_CELL_UNDERVOLTAGE_ALARM_LEVEL,
-    CONF_CELL_VOLTAGE_DIFF_ALARM_LEVEL,
-    CONF_OVERVOLTAGE_ALARM_LEVEL,
-    CONF_UNDERVOLTAGE_ALARM_LEVEL,
-    CONF_CHARGE_OVERCURRENT_ALARM_LEVEL,
-    CONF_DISCHARGE_OVERCURRENT_ALARM_LEVEL,
+    CONF_ALARM_LEVEL_CELL_OVERVOLTAGE,
+    CONF_ALARM_LEVEL_CELL_UNDERVOLTAGE,
+    CONF_ALARM_LEVEL_CELL_VOLTAGE_DIFF,
+    CONF_ALARM_LEVEL_CHARGE_OVERTEMPERATURE,
+    CONF_ALARM_LEVEL_CHARGE_UNDERTEMPERATURE,
+    CONF_ALARM_LEVEL_DISCHARGE_OVERTEMPERATURE,
+    CONF_ALARM_LEVEL_DISCHARGE_UNDERTEMPERATURE,
+    CONF_ALARM_LEVEL_TEMPERATURE_DIFF,
+    CONF_ALARM_LEVEL_OVERVOLTAGE,
+    CONF_ALARM_LEVEL_UNDERVOLTAGE,
+    CONF_ALARM_LEVEL_CHARGE_OVERCURRENT,
+    CONF_ALARM_LEVEL_DISCHARGE_OVERCURRENT,
+    CONF_ALARM_LEVEL_SOC_LOW,
+    CONF_ALARM_LEVEL_SOH_LOW,
+    CONF_ALARM_LEVEL_MOS_OVERTEMPERATURE,
     # Cell voltages and temperatures are handled by loops below
 ]
 
@@ -145,6 +161,13 @@ def get_temperature_sensors_schema():
         schema_obj[cv.Optional(get_temperature_sensor_key(i))] = TEMPERATURE_SENSOR_SCHEMA
     return cv.Schema(schema_obj)
 
+ALARM_LEVEL_SCHEMA = sensor.sensor_schema(
+    unit_of_measurement=UNIT_EMPTY,
+    icon=ICON_BATTERY_ALERT,
+    accuracy_decimals=0,
+    device_class=DEVICE_CLASS_EMPTY,
+    state_class=STATE_CLASS_NONE,
+)
 
 CONFIG_SCHEMA = (
     cv.Schema(
@@ -281,55 +304,23 @@ CONFIG_SCHEMA = (
             ),
             cv.Optional(CONF_TEMPERATURE_MOS): TEMPERATURE_SENSOR_SCHEMA,
             cv.Optional(CONF_TEMPERATURE_BOARD): TEMPERATURE_SENSOR_SCHEMA,
-            cv.Optional(CONF_CELL_OVERVOLTAGE_ALARM_LEVEL): sensor.sensor_schema(
-                unit_of_measurement=UNIT_EMPTY,
-                icon=ICON_BATTERY_ALERT,
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_EMPTY,
-                state_class=STATE_CLASS_NONE,
-            ),
-            cv.Optional(CONF_CELL_UNDERVOLTAGE_ALARM_LEVEL): sensor.sensor_schema(
-                unit_of_measurement=UNIT_EMPTY,
-                icon=ICON_BATTERY_ALERT,
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_EMPTY,
-                state_class=STATE_CLASS_NONE,
-            ),
-            cv.Optional(CONF_CELL_VOLTAGE_DIFF_ALARM_LEVEL): sensor.sensor_schema(
-                unit_of_measurement=UNIT_EMPTY,
-                icon=ICON_BATTERY_ALERT,
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_EMPTY,
-                state_class=STATE_CLASS_NONE,
-            ),
-            cv.Optional(CONF_OVERVOLTAGE_ALARM_LEVEL): sensor.sensor_schema(
-                unit_of_measurement=UNIT_EMPTY,
-                icon=ICON_BATTERY_ALERT,
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_EMPTY,
-                state_class=STATE_CLASS_NONE,
-            ),
-            cv.Optional(CONF_UNDERVOLTAGE_ALARM_LEVEL): sensor.sensor_schema(
-                unit_of_measurement=UNIT_EMPTY,
-                icon=ICON_BATTERY_ALERT,
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_EMPTY,
-                state_class=STATE_CLASS_NONE,
-            ),
-            cv.Optional(CONF_CHARGE_OVERCURRENT_ALARM_LEVEL): sensor.sensor_schema(
-                unit_of_measurement=UNIT_EMPTY,
-                icon=ICON_BATTERY_ALERT,
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_EMPTY,
-                state_class=STATE_CLASS_NONE,
-            ),
-            cv.Optional(CONF_DISCHARGE_OVERCURRENT_ALARM_LEVEL): sensor.sensor_schema(
-                unit_of_measurement=UNIT_EMPTY,
-                icon=ICON_BATTERY_ALERT,
-                accuracy_decimals=0,
-                device_class=DEVICE_CLASS_EMPTY,
-                state_class=STATE_CLASS_NONE,
-            ),
+
+            cv.Optional(CONF_ALARM_LEVEL_CELL_OVERVOLTAGE): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_CELL_UNDERVOLTAGE): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_CELL_VOLTAGE_DIFF): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_CHARGE_OVERTEMPERATURE): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_CHARGE_UNDERTEMPERATURE): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_DISCHARGE_OVERTEMPERATURE): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_DISCHARGE_UNDERTEMPERATURE): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_TEMPERATURE_DIFF): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_OVERVOLTAGE): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_UNDERVOLTAGE): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_CHARGE_OVERCURRENT): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_DISCHARGE_OVERCURRENT): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_SOC_LOW): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_SOH_LOW): ALARM_LEVEL_SCHEMA,
+            cv.Optional(CONF_ALARM_LEVEL_MOS_OVERTEMPERATURE): ALARM_LEVEL_SCHEMA,
+
         }
     )
     .extend(get_cell_voltages_schema())

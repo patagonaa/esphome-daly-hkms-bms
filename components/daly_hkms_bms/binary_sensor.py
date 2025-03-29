@@ -8,6 +8,12 @@ CONF_CHARGING_MOS_ENABLED = "charging_mos_enabled"
 CONF_DISCHARGING_MOS_ENABLED = "discharging_mos_enabled"
 CONF_PRECHARGING_MOS_ENABLED = "precharging_mos_enabled"
 CONF_BALANCING_ACTIVE = "balancing_active"
+
+CONF_ERROR_CHARGE_MOS_OVERTEMPERATURE = "error_charge_mos_overtemperature"
+CONF_ERROR_CHARGE_MOS_TEMPERATURE_DETECT = "error_charge_mos_temperature_detect"
+CONF_ERROR_DISCHARGE_MOS_OVERTEMPERATURE = "error_discharge_mos_overtemperature"
+CONF_ERROR_DISCHARGE_MOS_TEMPERATURE_DETECT = "error_discharge_mos_temperature_detect"
+CONF_ERROR_SHORT_CIRCUIT = "error_short_circuit"
 CONF_HAS_ERRORS = "has_errors"
 
 ICON_BATTERY_ARROW_UP = "mdi:battery-arrow-up"
@@ -21,6 +27,11 @@ TYPES = [
     CONF_DISCHARGING_MOS_ENABLED,
     CONF_PRECHARGING_MOS_ENABLED,
     CONF_BALANCING_ACTIVE,
+    CONF_ERROR_CHARGE_MOS_OVERTEMPERATURE,
+    CONF_ERROR_CHARGE_MOS_TEMPERATURE_DETECT,
+    CONF_ERROR_DISCHARGE_MOS_OVERTEMPERATURE,
+    CONF_ERROR_DISCHARGE_MOS_TEMPERATURE_DETECT,
+    CONF_ERROR_SHORT_CIRCUIT,
     CONF_HAS_ERRORS,
 ]
 
@@ -49,6 +60,11 @@ CONFIG_SCHEMA = cv.All(
                 CONF_PRECHARGING_MOS_ENABLED
             ): binary_sensor.binary_sensor_schema(icon=ICON_SLOPE_UPHILL),
             cv.Optional(CONF_BALANCING_ACTIVE): binary_sensor.binary_sensor_schema(icon=ICON_SCALE_BALANCE),
+            cv.Optional(CONF_ERROR_CHARGE_MOS_OVERTEMPERATURE): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
+            cv.Optional(CONF_ERROR_CHARGE_MOS_TEMPERATURE_DETECT): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
+            cv.Optional(CONF_ERROR_DISCHARGE_MOS_OVERTEMPERATURE): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
+            cv.Optional(CONF_ERROR_DISCHARGE_MOS_TEMPERATURE_DETECT): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
+            cv.Optional(CONF_ERROR_SHORT_CIRCUIT): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
             cv.Optional(CONF_HAS_ERRORS): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
         }
     )

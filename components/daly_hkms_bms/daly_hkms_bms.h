@@ -28,6 +28,90 @@ class DalyHkmsBmsInput {
     virtual void handle_update(uint16_t value) = 0;
  };
 
+  struct DalyHkmsStatus
+  {
+    // Code 0-1
+    uint8_t lvl_cell_ovp : 3;
+    uint8_t lvl_cell_uvp : 3;
+    bool smart_charger_connected : 1;
+    bool err_smart_charger_connection : 1;
+
+    uint8_t lvl_cell_volt_diff : 3;
+    uint8_t lvl_chg_overtemp : 3;
+    bool smart_discharger_connected : 1;
+    bool err_smart_discharger_connection : 1;
+
+    // Code 2-3
+    uint8_t lvl_chg_undertemp : 3;
+    uint8_t lvl_dschg_overtemp : 3;
+    bool err_chg_mos_temp_high : 1;
+    bool err_chg_mos_temp_detect : 1;
+
+    uint8_t lvl_dschg_undertemp : 3;
+    uint8_t lvl_temp_diff : 3;
+    bool err_dschg_mos_temp_high : 1;
+    bool err_dschg_mos_temp_detect : 1;
+
+    // Code 4-5
+    uint8_t lvl_total_ovp : 3;
+    uint8_t lvl_total_uvp : 3;
+    bool err_short_circuit : 1;
+    bool : 1;
+
+    uint8_t lvl_chg_ocp : 3;
+    uint8_t lvl_dschg_ocp : 3;
+    bool err_chg_undervoltage : 1;
+    bool err_dschg_overvoltage : 1;
+
+    // Code 6-7
+    uint8_t lvl_soc_low : 3;
+    uint8_t lvl_soh_low : 3;
+    bool parallel_comm : 1;
+    bool err_parallel_comm: 1;
+
+    uint8_t lvl_mos_overtemp : 3;
+    uint8_t lvl_thermal_runaway : 3;
+    bool : 1;
+    bool : 1;
+
+    // Code 8-9
+    uint16_t : 16;
+
+    // Code 10-11
+    uint8_t : 8;
+
+    bool err_afe_chip: 1;
+    bool err_afe_comm: 1;
+    bool err_afe_sampling: 1;
+    bool err_volt_detect: 1;
+    bool err_volt_detect_disconnected: 1;
+    bool err_volt_total_detect: 1;
+    bool err_curr_detect: 1;
+    bool err_temp_detect: 1;
+
+    // Code 12-13
+    bool err_temp_disconnected: 1;
+    bool err_eeprom: 1;
+    bool err_flash: 1;
+    bool err_rtc: 1;
+    bool err_chg_mos: 1;
+    bool err_dschg_mos: 1;
+    bool err_prechg_mos: 1;
+    bool err_prechg: 1;
+
+    bool chg_mos_off_bus: 1;
+    bool dschg_mos_off_bus: 1;
+    bool chg_mos_off_switch: 1;
+    bool dschg_mos_off_switch: 1;
+    bool fan_active: 1;
+    bool heating_active: 1;
+    bool current_limit_active: 1;
+    bool err_heating: 1;
+  };
+
+  static_assert(sizeof(DalyHkmsStatus) == 14);
+ 
+
 class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevice {
  public:
   void setup() override;
@@ -121,6 +205,7 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
   SUB_BINARY_SENSOR(error_discharge_mos_overtemperature)
   SUB_BINARY_SENSOR(error_discharge_mos_temperature_detect)
   SUB_BINARY_SENSOR(error_short_circuit)
+  SUB_BINARY_SENSOR(has_warnings)
   SUB_BINARY_SENSOR(has_errors)
 
   void set_cell_balancing_sensor(uint16_t cell, binary_sensor::BinarySensor *sensor) {

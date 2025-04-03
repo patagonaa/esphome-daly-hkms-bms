@@ -14,6 +14,7 @@ CONF_ERROR_CHARGE_MOS_TEMPERATURE_DETECT = "error_charge_mos_temperature_detect"
 CONF_ERROR_DISCHARGE_MOS_OVERTEMPERATURE = "error_discharge_mos_overtemperature"
 CONF_ERROR_DISCHARGE_MOS_TEMPERATURE_DETECT = "error_discharge_mos_temperature_detect"
 CONF_ERROR_SHORT_CIRCUIT = "error_short_circuit"
+CONF_HAS_WARNINGS = "has_warnings"
 CONF_HAS_ERRORS = "has_errors"
 
 ICON_BATTERY_ARROW_UP = "mdi:battery-arrow-up"
@@ -32,6 +33,7 @@ TYPES = [
     CONF_ERROR_DISCHARGE_MOS_OVERTEMPERATURE,
     CONF_ERROR_DISCHARGE_MOS_TEMPERATURE_DETECT,
     CONF_ERROR_SHORT_CIRCUIT,
+    CONF_HAS_WARNINGS,
     CONF_HAS_ERRORS,
 ]
 
@@ -65,6 +67,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_ERROR_DISCHARGE_MOS_OVERTEMPERATURE): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
             cv.Optional(CONF_ERROR_DISCHARGE_MOS_TEMPERATURE_DETECT): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
             cv.Optional(CONF_ERROR_SHORT_CIRCUIT): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
+            cv.Optional(CONF_HAS_WARNINGS): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
             cv.Optional(CONF_HAS_ERRORS): binary_sensor.binary_sensor_schema(icon=ICON_BATTERY_ALERT),
         }
     )

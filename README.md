@@ -128,8 +128,10 @@ binary_sensor:
       name: "BMS charging FET enabled"
     discharging_mos_enabled:
       name: "BMS discharging FET enabled"
+    has_warnings:
+      name: "BMS has warnings"
     has_errors:
-      name: "BMS has errors/warnings"
+      name: "BMS has errors"
 ```
 
 #### Options:
@@ -139,7 +141,8 @@ binary_sensor:
 - **charging_mos_enabled**: BMS charging MOS status.
 - **discharging_mos_enabled**: BMS discharging MOS status.
 - **precharging_mos_enabled**: BMS precharging MOS status.
-- **has_errors**: BMS warning/error status.
+- **has_warnings**: BMS warning status.
+- **has_errors**: BMS error status.
 - **error_charge_mos_overtemperature**
 - **error_charge_mos_temperature_detect**
 - **error_discharge_mos_overtemperature**

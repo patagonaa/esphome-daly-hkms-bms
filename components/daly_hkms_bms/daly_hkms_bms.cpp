@@ -2,6 +2,8 @@
 #include "daly_hkms_bms_registers.h"
 #include "esphome/core/log.h"
 
+#include <optional>
+
 namespace esphome {
 namespace daly_hkms_bms {
 
@@ -173,8 +175,32 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
     return encode_uint16(data[(i - register_offset) * 2], data[(i - register_offset) * 2 + 1]);
   };
 
+  std::optional<DalyHkmsStatus> status = {};
+
+  if (has_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_00_01) && has_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_12_13)) {
+    uint16_t registers[] = {
+      get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_00_01),
+      get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_02_03),
+      get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_04_05),
+      get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_06_07),
+      get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_08_09),
+      get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_10_11),
+      get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_12_13)
+    };
+    static_assert(sizeof(registers) == sizeof(DalyHkmsStatus));
+
+    status = *reinterpret_cast<DalyHkmsStatus*>(registers);
+  }
+
+#ifdef USE_SENSOR
+  auto publish_sensor_state_raw = [](sensor::Sensor *sensor, float value) -> void {
+    if (sensor == nullptr)
+      return;
+    sensor->publish_state(value);
+  };
+
   auto publish_sensor_state = [&](sensor::Sensor *sensor, uint16_t i, int16_t offset, float factor,
-                                  int32_t unavailable_value = -1) -> void {
+    int32_t unavailable_value = -1) -> void {
     if (sensor == nullptr || !has_register(i))
       return;
     uint16_t register_value = get_register(i);
@@ -182,8 +208,6 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
     sensor->publish_state(value);
   };
 
-
-#ifdef USE_SENSOR
   for (uint16_t i = 0; i < this->cell_voltage_sensors_max_; i++) {
     publish_sensor_state(this->cell_voltage_sensors_[i], DALY_MODBUS_ADDR_CELL_VOLT_1 + i, 0, 0.001);
   }
@@ -223,24 +247,25 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
   publish_sensor_state(this->balance_current_sensor_, DALY_MODBUS_ADDR_BALANCE_CURRENT, -30000, 0.001);
 
   if (has_register(DALY_MODBUS_ADDR_POWER) && has_register(DALY_MODBUS_ADDR_CHG_DSCHG_STATUS)) {
+    uint16_t power = get_register(DALY_MODBUS_ADDR_POWER);
     uint16_t chg_dschg_status = get_register(DALY_MODBUS_ADDR_CHG_DSCHG_STATUS);
     switch (chg_dschg_status) {
       case 0: // stationary
-        publish_sensor_state(this->power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 0);
-        publish_sensor_state(this->charge_power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 0);
-        publish_sensor_state(this->discharge_power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 0);
+        publish_sensor_state_raw(this->power_sensor_, 0);
+        publish_sensor_state_raw(this->charge_power_sensor_, 0);
+        publish_sensor_state_raw(this->discharge_power_sensor_, 0);
         break;
 
       case 1: // charging
-        publish_sensor_state(this->power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 1);
-        publish_sensor_state(this->charge_power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 1);
-        publish_sensor_state(this->discharge_power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 0);
+        publish_sensor_state_raw(this->power_sensor_, power);
+        publish_sensor_state_raw(this->charge_power_sensor_, power);
+        publish_sensor_state_raw(this->discharge_power_sensor_, 0);
         break;
 
       case 2: // discharging
-        publish_sensor_state(this->power_sensor_, DALY_MODBUS_ADDR_POWER, 0, -1);
-        publish_sensor_state(this->charge_power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 0);
-        publish_sensor_state(this->discharge_power_sensor_, DALY_MODBUS_ADDR_POWER, 0, 1);
+        publish_sensor_state_raw(this->power_sensor_, -power);
+        publish_sensor_state_raw(this->charge_power_sensor_, 0);
+        publish_sensor_state_raw(this->discharge_power_sensor_, power);
         break;
       
       default:
@@ -253,65 +278,25 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
   publish_sensor_state(this->temperature_mos_sensor_, DALY_MODBUS_ADDR_MOS_TEMP, -40, 1, 255);
   publish_sensor_state(this->temperature_board_sensor_, DALY_MODBUS_ADDR_BOARD_TEMP, -40, 1, 255);
 
+  if (status.has_value()) {
+    publish_sensor_state_raw(this->alarm_level_cell_overvoltage_sensor_, status.value().lvl_cell_ovp);
+    publish_sensor_state_raw(this->alarm_level_cell_undervoltage_sensor_, status.value().lvl_cell_uvp);
+    publish_sensor_state_raw(this->alarm_level_cell_voltage_diff_sensor_, status.value().lvl_cell_volt_diff);
+    publish_sensor_state_raw(this->alarm_level_charge_overtemperature_sensor_, status.value().lvl_chg_overtemp);
 
-  if (has_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_00_01) && has_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_12_13)) {
-    uint16_t reg_val = get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_00_01);
+    publish_sensor_state_raw(this->alarm_level_charge_undertemperature_sensor_, status.value().lvl_chg_undertemp);
+    publish_sensor_state_raw(this->alarm_level_discharge_overtemperature_sensor_, status.value().lvl_dschg_overtemp);
+    publish_sensor_state_raw(this->alarm_level_discharge_undertemperature_sensor_, status.value().lvl_dschg_undertemp);
+    publish_sensor_state_raw(this->alarm_level_temperature_diff_sensor_, status.value().lvl_temp_diff);
 
-    if (this->alarm_level_cell_overvoltage_sensor_ != nullptr)
-      this->alarm_level_cell_overvoltage_sensor_->publish_state(reg_val & 0x07);
+    publish_sensor_state_raw(this->alarm_level_overvoltage_sensor_, status.value().lvl_total_ovp);
+    publish_sensor_state_raw(this->alarm_level_undervoltage_sensor_, status.value().lvl_total_uvp);
+    publish_sensor_state_raw(this->alarm_level_charge_overcurrent_sensor_, status.value().lvl_chg_ocp);
+    publish_sensor_state_raw(this->alarm_level_discharge_overcurrent_sensor_, status.value().lvl_dschg_ocp);
 
-    if (this->alarm_level_cell_undervoltage_sensor_ != nullptr)
-      this->alarm_level_cell_undervoltage_sensor_->publish_state((reg_val >> 3) & 0x07);
-        
-    if (this->alarm_level_cell_voltage_diff_sensor_ != nullptr)
-      this->alarm_level_cell_voltage_diff_sensor_->publish_state((reg_val >> 8) & 0x07);
-
-    if (this->alarm_level_charge_overtemperature_sensor_ != nullptr)
-      this->alarm_level_charge_overtemperature_sensor_->publish_state((reg_val >> 11) & 0x07);
-
-
-    reg_val = get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_02_03);
-
-    if (this->alarm_level_charge_undertemperature_sensor_ != nullptr)
-      this->alarm_level_charge_undertemperature_sensor_->publish_state(reg_val & 0x07);
-
-    if (this->alarm_level_discharge_overtemperature_sensor_ != nullptr)
-      this->alarm_level_discharge_overtemperature_sensor_->publish_state((reg_val >> 3) & 0x07);
-        
-    if (this->alarm_level_discharge_undertemperature_sensor_ != nullptr)
-      this->alarm_level_discharge_undertemperature_sensor_->publish_state((reg_val >> 8) & 0x07);
-
-    if (this->alarm_level_temperature_diff_sensor_ != nullptr)
-      this->alarm_level_temperature_diff_sensor_->publish_state((reg_val >> 11) & 0x07);
-
-    
-    reg_val = get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_04_05);
-
-    if (this->alarm_level_overvoltage_sensor_ != nullptr)
-      this->alarm_level_overvoltage_sensor_->publish_state(reg_val & 0x07);
-
-    if (this->alarm_level_undervoltage_sensor_ != nullptr)
-      this->alarm_level_undervoltage_sensor_->publish_state((reg_val >> 3) & 0x07);
-        
-    if (this->alarm_level_charge_overcurrent_sensor_ != nullptr)
-      this->alarm_level_charge_overcurrent_sensor_->publish_state((reg_val >> 8) & 0x07);
-        
-    if (this->alarm_level_discharge_overcurrent_sensor_ != nullptr)
-      this->alarm_level_discharge_overcurrent_sensor_->publish_state((reg_val >> 11) & 0x07);
-
-
-    reg_val = get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_06_07);
-
-    if (this->alarm_level_soc_low_sensor_ != nullptr)
-      this->alarm_level_soc_low_sensor_->publish_state(reg_val & 0x07);
-
-    if (this->alarm_level_soh_low_sensor_ != nullptr)
-      this->alarm_level_soh_low_sensor_->publish_state((reg_val >> 3) & 0x07);
-        
-    if (this->alarm_level_mos_overtemperature_sensor_ != nullptr)
-      this->alarm_level_mos_overtemperature_sensor_->publish_state((reg_val >> 8) & 0x07);
-        
-    // thermal runaway alarm level
+    publish_sensor_state_raw(this->alarm_level_soc_low_sensor_, status.value().lvl_soc_low);
+    publish_sensor_state_raw(this->alarm_level_soh_low_sensor_, status.value().lvl_soh_low);
+    publish_sensor_state_raw(this->alarm_level_mos_overtemperature_sensor_, status.value().lvl_mos_overtemp);
   }
 
 #endif
@@ -335,6 +320,12 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
 #endif
 
 #ifdef USE_BINARY_SENSOR
+  auto publish_binary_sensor_state = [](binary_sensor::BinarySensor *sensor, bool value) -> void {
+    if (sensor == nullptr)
+      return;
+    sensor->publish_state(value);
+  };
+
   if (this->balancing_active_binary_sensor_ && has_register(DALY_MODBUS_ADDR_BALANCE_STATUS)) {
     this->balancing_active_binary_sensor_->publish_state(get_register(DALY_MODBUS_ADDR_BALANCE_STATUS) > 0);
   }
@@ -369,41 +360,100 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
     this->precharging_mos_enabled_binary_sensor_->publish_state(get_register(DALY_MODBUS_ADDR_PRECHG_MOS_ACTIVE) > 0);
   }
 
-  if (has_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_00_01) && has_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_12_13)) {
+  if (status.has_value()) {
+    bool has_warnings = false;
     bool has_errors = false;
 
-    uint16_t reg_val = get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_00_01);
-    has_errors |= reg_val & 0x3F3F;
+    // Code 0-1
+    has_warnings |= (status.value().lvl_cell_ovp) > 0;
+    has_errors |= (status.value().lvl_cell_ovp) > 1;
+    has_warnings |= (status.value().lvl_cell_uvp) > 0;
+    has_errors |= (status.value().lvl_cell_uvp) > 1;
+    has_errors |= status.value().err_smart_charger_connection;
 
-    reg_val = get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_02_03);
-    has_errors |= reg_val & 0x3F3F;
-    if (this->error_charge_mos_overtemperature_binary_sensor_)
-      this->error_charge_mos_overtemperature_binary_sensor_->publish_state(reg_val & (1 << 6));
-    if (this->error_charge_mos_temperature_detect_binary_sensor_)
-      this->error_charge_mos_temperature_detect_binary_sensor_->publish_state(reg_val & (1 << 7));
-    if (this->error_discharge_mos_overtemperature_binary_sensor_)
-      this->error_discharge_mos_overtemperature_binary_sensor_->publish_state(reg_val & (1 << 14));
-    if (this->error_discharge_mos_temperature_detect_binary_sensor_)
-      this->error_discharge_mos_temperature_detect_binary_sensor_->publish_state(reg_val & (1 << 15));
+    has_warnings |= (status.value().lvl_cell_volt_diff) > 0;
+    has_errors |= (status.value().lvl_cell_volt_diff) > 1;
+    has_warnings |= (status.value().lvl_chg_overtemp) > 0;
+    has_errors |= (status.value().lvl_chg_overtemp) > 1;
+    has_errors |= status.value().err_smart_discharger_connection;
+
+    // Code 2-3
+    has_warnings |= (status.value().lvl_chg_undertemp) > 0;
+    has_errors |= (status.value().lvl_chg_undertemp) > 1;
+
+    has_warnings |= (status.value().lvl_dschg_overtemp) > 0;
+    has_errors |= (status.value().lvl_dschg_overtemp) > 1;
+
+    has_errors |= status.value().err_chg_mos_temp_high;
+    publish_binary_sensor_state(this->error_charge_mos_overtemperature_binary_sensor_, status.value().err_chg_mos_temp_high);
     
-    reg_val = get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_04_05);
-    has_errors |= reg_val & 0xFF7F;
-    if (this->error_short_circuit_binary_sensor_)
-      this->error_short_circuit_binary_sensor_->publish_state(reg_val & (1 << 6));
+    has_errors |= status.value().err_chg_mos_temp_detect;
+    publish_binary_sensor_state(this->error_charge_mos_temperature_detect_binary_sensor_, status.value().err_chg_mos_temp_detect);
 
-    reg_val = get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_06_07);
-    has_errors |= reg_val & 0x3F3F;
+    has_errors |= status.value().err_dschg_mos_temp_high;
+    publish_binary_sensor_state(this->error_discharge_mos_overtemperature_binary_sensor_, status.value().err_dschg_mos_temp_high);
+    
+    has_errors |= status.value().err_dschg_mos_temp_detect;
+    publish_binary_sensor_state(this->error_discharge_mos_temperature_detect_binary_sensor_, status.value().err_dschg_mos_temp_detect);
+    
+    // Code 4-5
+    has_warnings |= (status.value().lvl_total_ovp) > 0;
+    has_errors |= (status.value().lvl_total_ovp) > 1;
 
-    reg_val = get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_08_09);
+    has_warnings |= (status.value().lvl_total_uvp) > 0;
+    has_errors |= (status.value().lvl_total_uvp) > 1;
 
-    reg_val = get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_10_11);
-    has_errors |= reg_val & 0xFF00;
+    has_errors |= status.value().err_short_circuit;
+    publish_binary_sensor_state(this->error_short_circuit_binary_sensor_, status.value().err_short_circuit);
+    
+    has_warnings |= (status.value().lvl_chg_ocp) > 0;
+    has_errors |= (status.value().lvl_chg_ocp) > 1;
 
-    reg_val = get_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_12_13);
-    has_errors |= reg_val & 0x80FF;
+    has_warnings |= (status.value().lvl_dschg_ocp) > 0;
+    has_errors |= (status.value().lvl_dschg_ocp) > 1;
+    
+    has_errors |= status.value().err_chg_undervoltage;
+    has_errors |= status.value().err_dschg_overvoltage;
 
-    if (this->has_errors_binary_sensor_)
-      this->has_errors_binary_sensor_->publish_state(has_errors);
+    // Code 6-7
+    has_warnings |= (status.value().lvl_soc_low) > 0;
+    has_errors |= (status.value().lvl_soc_low) > 1;
+
+    has_warnings |= (status.value().lvl_soh_low) > 0;
+    has_errors |= (status.value().lvl_soh_low) > 1;
+
+    has_errors |= status.value().err_parallel_comm;
+
+    has_warnings |= (status.value().lvl_mos_overtemp) > 0;
+    has_errors |= (status.value().lvl_mos_overtemp) > 1;
+
+    has_warnings |= (status.value().lvl_thermal_runaway) > 0;
+    has_errors |= (status.value().lvl_thermal_runaway) > 1;
+
+    // Code 10-11
+    has_errors |= status.value().err_afe_chip;
+    has_errors |= status.value().err_afe_comm;
+    has_errors |= status.value().err_afe_sampling;
+    has_errors |= status.value().err_volt_detect;
+    has_errors |= status.value().err_volt_detect_disconnected;
+    has_errors |= status.value().err_volt_total_detect;
+    has_errors |= status.value().err_curr_detect;
+    has_errors |= status.value().err_temp_detect;
+
+    // Code 12-13
+    has_errors |= status.value().err_temp_disconnected;
+    has_errors |= status.value().err_eeprom;
+    has_errors |= status.value().err_flash;
+    has_errors |= status.value().err_rtc;
+    has_errors |= status.value().err_chg_mos;
+    has_errors |= status.value().err_dschg_mos;
+    has_errors |= status.value().err_prechg_mos;
+    has_errors |= status.value().err_prechg;
+
+    has_errors |= status.value().err_heating;
+
+    publish_binary_sensor_state(this->has_warnings_binary_sensor_, has_warnings || has_errors);
+    publish_binary_sensor_state(this->has_errors_binary_sensor_, has_errors);
   }
 #endif
 

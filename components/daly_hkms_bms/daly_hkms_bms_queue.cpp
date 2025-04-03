@@ -4,6 +4,8 @@
 namespace esphome {
 namespace daly_hkms_bms {
 
+static const char *const TAG = "daly_hkms_bms_queue";
+
 DalyHkmsCommandQueue* DalyHkmsCommandQueue::get_for_modbus(const modbus::Modbus* modbus) {
   auto it = DalyHkmsCommandQueue::instances_.find(modbus);
   if (it != DalyHkmsCommandQueue::instances_.end()) {
@@ -41,6 +43,7 @@ void DalyHkmsCommandQueue::add_or_update(bool prioritize, const QueueItem &item_
 bool DalyHkmsCommandQueue::try_get_to_send(uint16_t daly_address, QueueItem* item) {
   if (this->pending_item_.has_value()) {
     if (this->pending_item_.value().daly_address == daly_address) {
+      ESP_LOGD(TAG, "Returning same queue item for %" PRIu16 " twice -> timeout?", daly_address);
       // pending device asks to send again -> return same item
       *item = this->pending_item_.value();
       return true;

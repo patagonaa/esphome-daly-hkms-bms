@@ -51,7 +51,7 @@ void DalyHkmsBmsComponent::loop() {
   switch (to_send.cmd) {
     case MODBUS_CMD_READ_HOLDING_REGISTERS:
     {
-      ESP_LOGD(TAG, "Sending modbus read request to %d: start register %" PRIu16 ", register count %" PRIu16, this->daly_address_,
+      ESP_LOGV(TAG, "Sending modbus read request to %d: start register %" PRIu16 ", register count %" PRIu16, this->daly_address_,
         to_send.register_address, to_send.data);
       this->parent_->send(modbus_device_request_address, MODBUS_CMD_READ_HOLDING_REGISTERS, to_send.register_address, to_send.data,
         0, nullptr);
@@ -59,7 +59,7 @@ void DalyHkmsBmsComponent::loop() {
     }
     case MODBUS_CMD_WRITE_SINGLE_REGISTER:
     {
-      ESP_LOGD(TAG, "Sending modbus write request to %d: register %" PRIu16 ", value %" PRIu16, this->daly_address_,
+      ESP_LOGV(TAG, "Sending modbus write request to %d: register %" PRIu16 ", value %" PRIu16, this->daly_address_,
         to_send.register_address, to_send.data);
       
         uint8_t reg_value[2] = { uint8_t((to_send.data >> 8) & 0xFF), uint8_t(to_send.data & 0xFF) };
@@ -144,7 +144,7 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
     return;
   }
 
-  ESP_LOGD(TAG, "#%d Got modbus response: %d bytes", this->daly_address_, data.size());
+  ESP_LOGV(TAG, "#%d Got modbus response: %d bytes", this->daly_address_, data.size());
 
   uint16_t register_offset;
   uint16_t register_count;

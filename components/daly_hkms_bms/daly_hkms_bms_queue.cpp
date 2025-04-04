@@ -42,13 +42,10 @@ void DalyHkmsCommandQueue::add_or_update(bool prioritize, const QueueItem &item_
 }
 bool DalyHkmsCommandQueue::try_get_to_send(uint16_t daly_address, QueueItem* item) {
   if (this->pending_item_.has_value()) {
-    if (this->pending_item_.value().daly_address == daly_address) {
-      ESP_LOGD(TAG, "Returning same queue item for %" PRIu16 " twice -> timeout?", daly_address);
-      // pending device asks to send again -> return same item
-      *item = this->pending_item_.value();
-      return true;
-    }
-    return false;
+    QueueItem pending_item = this->pending_item_.value();
+    ESP_LOGD(TAG, "Requesting to send while %" PRIu16 " still pending -> requeue", pending_item.daly_address);
+    this->add_or_update(false, pending_item);
+    this->pending_item_.reset();
   }
 
   if (!prio_queue_.empty()) {

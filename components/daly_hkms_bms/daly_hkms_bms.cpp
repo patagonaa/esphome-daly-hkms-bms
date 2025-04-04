@@ -416,11 +416,9 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
     has_errors |= status.value().err_dschg_overvoltage;
 
     // Code 6-7
+    // SoC and SoH are never errors
     has_warnings |= (status.value().lvl_soc_low) > 0;
-    has_errors |= (status.value().lvl_soc_low) > 1;
-
     has_warnings |= (status.value().lvl_soh_low) > 0;
-    has_errors |= (status.value().lvl_soh_low) > 1;
 
     has_errors |= status.value().err_parallel_comm;
 

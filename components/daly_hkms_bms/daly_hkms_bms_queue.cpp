@@ -1,6 +1,8 @@
 #include "daly_hkms_bms_queue.h"
 #include "daly_hkms_bms.h"
 
+#include <cinttypes>
+
 namespace esphome {
 namespace daly_hkms_bms {
 

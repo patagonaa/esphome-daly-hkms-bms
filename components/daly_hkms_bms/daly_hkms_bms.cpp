@@ -4,6 +4,8 @@
 #include "esphome/core/helpers.h"
 #include "esphome/core/optional.h"
 
+#include <cinttypes>
+
 namespace esphome {
 namespace daly_hkms_bms {
 

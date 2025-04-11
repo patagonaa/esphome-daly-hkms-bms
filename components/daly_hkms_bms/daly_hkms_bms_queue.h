@@ -1,9 +1,9 @@
 #pragma once
 
 #include "esphome/core/defines.h"
+#include "esphome/core/optional.h"
 #include "esphome/components/modbus/modbus.h"
 
-#include <optional>
 #include <unordered_map>
 #include <deque>
 #include <cstdint>
@@ -38,7 +38,7 @@ class DalyHkmsCommandQueue
   static std::unordered_map<const modbus::Modbus*, DalyHkmsCommandQueue*> instances_;
   std::deque<QueueItem> prio_queue_{};
   std::deque<QueueItem> non_prio_queue_{};
-  std::optional<QueueItem> pending_item_{};
+  esphome::optional<QueueItem> pending_item_{};
 };
 
 }  // namespace daly_hkms_bms

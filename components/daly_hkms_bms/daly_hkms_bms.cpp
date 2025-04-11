@@ -2,8 +2,7 @@
 #include "daly_hkms_bms_registers.h"
 #include "esphome/core/log.h"
 #include "esphome/core/helpers.h"
-
-#include <optional>
+#include "esphome/core/optional.h"
 
 namespace esphome {
 namespace daly_hkms_bms {
@@ -176,7 +175,7 @@ void DalyHkmsBmsComponent::on_modbus_data(const std::vector<uint8_t> &data) {
     return encode_uint16(data[(i - register_offset) * 2], data[(i - register_offset) * 2 + 1]);
   };
 
-  std::optional<DalyHkmsStatus> status = {};
+  esphome::optional<DalyHkmsStatus> status = {};
 
   if (has_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_00_01) && has_register(DALY_MODBUS_ADDR_BMS_TYPE_2_ERR_12_13)) {
     uint16_t registers[] = {

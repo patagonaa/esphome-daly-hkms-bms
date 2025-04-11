@@ -1,6 +1,7 @@
 #include "daly_hkms_bms.h"
 #include "daly_hkms_bms_registers.h"
 #include "esphome/core/log.h"
+#include "esphome/core/helpers.h"
 
 #include <optional>
 

@@ -5,6 +5,7 @@ Works with other of the "new" DALY BMS as well.
 Tested with:
 - 100A 15S K-Series BMS
 - 100A 8S K-Series BMS
+- 300A 8S K-Series BMS
 - 500A 24S "100 Balance" Active Balance BMS
 
 Also see https://github.com/syssi/esphome-daly-bms for a similar component that uses BLE.

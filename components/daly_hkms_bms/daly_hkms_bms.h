@@ -56,7 +56,7 @@ class DalyHkmsBmsInput {
     uint8_t lvl_total_ovp : 3;
     uint8_t lvl_total_uvp : 3;
     bool err_short_circuit : 1;
-    bool : 1;
+    bool upgrade_sign: 1;
 
     uint8_t lvl_chg_ocp : 3;
     uint8_t lvl_dschg_ocp : 3;
@@ -192,6 +192,7 @@ class DalyHkmsBmsComponent : public PollingComponent, public modbus::ModbusDevic
 
 #ifdef USE_TEXT_SENSOR
   SUB_TEXT_SENSOR(status)
+  SUB_TEXT_SENSOR(alerts)
 #endif
 
 #ifdef USE_BINARY_SENSOR

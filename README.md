@@ -111,11 +111,14 @@ text_sensor:
     daly_hkms_bms_id: bms_1
     status:
       name: "BMS Status"
+    alerts:
+      name: "BMS alerts"
 ```
 
 #### Options:
 - **daly_hkms_bms_id**: ID of the daly_hkms_bms component (required for multiple BMS).
 - **status**: The BMS status (Charging, Discharging, Stationary).
+- **alerts**: The BMS alerts/messages, newline-separated ("cell volt high lvl 2", "chg mos temp detect fault", etc.).
 
 ### Binary Sensor component
 

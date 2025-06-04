@@ -110,7 +110,7 @@ text_sensor:
   - platform: daly_hkms_bms
     daly_hkms_bms_id: bms_1
     status:
-      name: "BMS Status"
+      name: "BMS status"
     alerts:
       name: "BMS alerts"
 ```
@@ -226,7 +226,9 @@ text_sensor:
   - platform: daly_hkms_bms
     daly_hkms_bms_id: bms_1
     status:
-      name: "BMS Status"
+      name: "BMS status"
+    alerts:
+      name: "BMS alerts"
 
 binary_sensor:
   - platform: daly_hkms_bms

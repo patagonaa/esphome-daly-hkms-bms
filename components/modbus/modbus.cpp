@@ -256,13 +256,13 @@ bool Modbus::parse_modbus_byte_(uint8_t byte) {
             ESP_LOGD(TAG, "Ignoring error - not expecting a response from %" PRIu8 "", address);
           }
         } else {  // Not an error response
-          if (this->waiting_for_response_ == address) {
+          // if (this->waiting_for_response_ == address) {
             device->on_modbus_data(data);
-          } else {
-            // Ignore modbus response not related to a pending command
-            ESP_LOGW(TAG, "Ignoring response - not expecting a response from %" PRIu8 ", %" PRIu32 "ms after last send",
-                     address, millis() - this->last_send_);
-          }
+          // } else {
+          //   // Ignore modbus response not related to a pending command
+          //   ESP_LOGW(TAG, "Ignoring response - not expecting a response from %" PRIu8 ", %" PRIu32 "ms after last send",
+          //            address, millis() - this->last_send_);
+          // }
         }
       }
     }
@@ -275,7 +275,7 @@ bool Modbus::parse_modbus_byte_(uint8_t byte) {
 
   this->clear_rx_buffer_(LOG_STR("parse succeeded"));
 
-  if (this->waiting_for_response_ == address)
+  // if (this->waiting_for_response_ == address)
     this->waiting_for_response_ = 0;
 
   return true;

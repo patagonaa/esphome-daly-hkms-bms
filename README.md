@@ -174,7 +174,7 @@ switch:
 ```yaml
 external_components:
   - source: github://patagonaa/esphome-daly-hkms-bms@main
-    components: [daly_hkms_bms]
+    components: [daly_hkms_bms, modbus]
 
 uart:
   - id: bms_uart

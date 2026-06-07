@@ -320,6 +320,7 @@ Please consider donating (via GitHub Sponsors) if this project is useful to you.
 
 You can also support this project in other ways:
 
+- by testing with other BMS models than the ones listed and adding them to the readme
 - by reporting bugs (via issues)
 - by requesting features (via issues/discussions)
 - by contributing code directly (via pull requests)

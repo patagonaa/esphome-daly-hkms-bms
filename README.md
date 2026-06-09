@@ -1,4 +1,20 @@
 # esphome-daly-hkms-bms
+> [!CAUTION]
+> You should use my new component based on CAN bus
+> [patagonaa/esphome-daly-hkms-bms-can](https://github.com/patagonaa/esphome-daly-hkms-bms-can)
+> instead of this.
+ 
+> [!NOTE]
+> Due to DALY not doing Modbus correctly and ESPHome updating their Modbus component, this component
+> needs to patch the ESPHome Modbus component, making the entire ESPHome config incompatible with other
+> Modbus devices and prone to issues when upgrading ESPHome.
+>
+> I've created [an issue](https://github.com/patagonaa/esphome-daly-hkms-bms/issues/10) to remove the dependency on the Modbus component
+> entirely, but since I've now switched to CAN bus myself, I don't plan on working on this myself.  
+> Feel free to contact me via this issue, if you want to rewrite this component yourself.
+>
+> Be aware that I will not be accepting AI-generated contributions.
+
 ESPHome component to monitor DALY H/K/M/S-Series Battery Management Systems via UART / RS485.  
 Works with other of the "new" DALY BMS as well.
 

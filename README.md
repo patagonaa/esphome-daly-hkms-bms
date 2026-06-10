@@ -1,17 +1,17 @@
 # esphome-daly-hkms-bms
 > [!CAUTION]
-> You should use my new component based on CAN bus
-> [patagonaa/esphome-daly-hkms-bms-can](https://github.com/patagonaa/esphome-daly-hkms-bms-can)
-> instead of this.
+> You should use my new component based on CAN bus [patagonaa/esphome-daly-hkms-bms-can](https://github.com/patagonaa/esphome-daly-hkms-bms-can)
+> instead of this as it will be more reliable, has better and more consistent update rate and is not prone to break on ESPHome upgrades.
  
 > [!NOTE]
 > Due to DALY not doing Modbus correctly and ESPHome updating their Modbus component, this component
 > needs to patch the ESPHome Modbus component, making the entire ESPHome config incompatible with other
 > Modbus devices and prone to issues when upgrading ESPHome.
 >
-> I've created [an issue](https://github.com/patagonaa/esphome-daly-hkms-bms/issues/10) to remove the dependency on the Modbus component
-> entirely, but since I've now switched to CAN bus myself, I don't plan on working on this myself.  
-> Feel free to contact me via this issue, if you want to rewrite this component yourself.
+> I've created an issue to remove the dependency on the Modbus component entirely, but since I've now switched to CAN bus myself,
+> I don't plan on working on this myself.
+>
+> Feel free to contact me via [this issue](https://github.com/patagonaa/esphome-daly-hkms-bms/issues/10), if you want to rewrite this component yourself.
 >
 > Be aware that I will not be accepting AI-generated contributions.
 
@@ -20,6 +20,7 @@ Works with other of the "new" DALY BMS as well.
 
 Tested with:
 - 100A 15S K-Series BMS
+- 100A 8-24S "100 Balance" Active Balance BMS
 - 100A 8S K-Series BMS
 - 300A 8S K-Series BMS
 - 500A 24S "100 Balance" Active Balance BMS
